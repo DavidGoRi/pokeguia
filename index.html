@@ -1,0 +1,2062 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PokéGuía</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#e3350d">
+<link rel="icon" href="icono-192.png">
+<link rel="apple-touch-icon" href="icono-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fondo: #f3f4f7; --panel: #ffffff; --texto: #1d2130; --suave: #6b7185;
+    --borde: #dde0e8; --acento: #e3350d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --fondo: #14161d; --panel: #1e212b; --texto: #eceef4; --suave: #9aa0b4; --borde: #2f3340; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", system-ui, sans-serif; background: var(--fondo); color: var(--texto); }
+  header { background: var(--acento); color: #fff; padding: 14px 16px; }
+  header h1 { margin: 0; font-size: 1.3rem; }
+  main { max-width: 1000px; margin: 0 auto; padding: 16px; }
+  .controles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: var(--panel);
+    border: 1px solid var(--borde); border-radius: 12px; padding: 14px; }
+  .controles label { display: block; font-size: .8rem; color: var(--suave); margin-bottom: 4px; font-weight: 600; }
+  select, input[type=search] { width: 100%; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--borde);
+    background: var(--fondo); color: var(--texto); font-size: .95rem; }
+  .opciones { grid-column: 1 / -1; display: flex; gap: 18px; flex-wrap: wrap; font-size: .9rem; align-items: center; }
+  .opciones label { display: inline; color: var(--texto); font-weight: 400; margin: 0; }
+  .contador { color: var(--suave); font-size: .85rem; margin-left: auto; }
+  .ficha { margin-top: 16px; background: var(--panel); border: 1px solid var(--borde); border-radius: 12px;
+    padding: 16px; display: grid; grid-template-columns: 240px 1fr; gap: 20px; }
+  .foto { text-align: center; }
+  .foto img { width: 220px; height: 220px; object-fit: contain; image-rendering: auto; }
+  .foto img.pixel { image-rendering: pixelated; }
+  .foto h2 { margin: 6px 0 2px; font-size: 1.4rem; }
+  .foto .num { color: var(--suave); font-size: .9rem; }
+  .foto .forma { color: var(--suave); font-size: .9rem; font-style: italic; }
+  .bloque { margin-bottom: 14px; }
+  .bloque h3 { margin: 0 0 6px; font-size: .95rem; }
+  .bloque h3 small { color: var(--suave); font-weight: 400; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tipo { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; color: #fff;
+    font-size: .85rem; font-weight: 600; text-shadow: 0 1px 1px rgba(0,0,0,.35); }
+  .tipo b { background: rgba(0,0,0,.28); border-radius: 999px; padding: 0 6px; font-size: .75rem; }
+  .vacio { color: var(--suave); font-size: .85rem; }
+  .seccion { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--suave);
+    border-bottom: 1px solid var(--borde); padding-bottom: 4px; margin: 4px 0 10px; }
+  .nota { margin-top: 10px; font-size: .78rem; color: var(--suave); }
+  .donde { margin-top: 16px; background: var(--panel); border: 1px solid var(--borde); border-radius: 12px; padding: 16px; }
+  .donde h2 { margin: 0 0 12px; font-size: 1.15rem; }
+  .donde-grid { display: flex; flex-direction: column; gap: 16px; }
+  .pestanas { display: flex; gap: 6px; margin-bottom: 8px; }
+  .pestanas button { border: 1px solid var(--borde); background: var(--fondo); color: var(--texto); border-radius: 8px;
+    padding: 5px 12px; cursor: pointer; font-size: .85rem; }
+  .pestanas button.activa { background: var(--acento); color: #fff; border-color: var(--acento); }
+  .pestanas button span { opacity: .8; font-size: .75rem; }
+  svg.mapa { width: 100%; height: auto; max-height: 78vh; display: block; border-radius: 10px; background: var(--mar); }
+  .mapa-caja { overflow: auto; border-radius: 10px; }
+  .lugarc.con-foto { cursor: pointer; }
+  .lugarc.con-foto:hover { border-color: var(--acento); }
+  .lugarc .mini { float: right; width: 64px; height: 48px; object-fit: cover; border-radius: 6px; margin-left: 8px; background: #000; }
+  .lugarc .ver-lugar { font-size: .68rem; font-weight: 600; color: var(--acento); margin-left: auto; }
+  #dlgLugar { width: min(980px, 94vw); max-height: 92vh; border: none; border-radius: 14px; padding: 14px; background: var(--panel); color: var(--texto); }
+  #dlgLugar::backdrop { background: rgba(0,0,0,.65); }
+  #dlgLugar .dlg-cab { display: flex; justify-content: space-between; align-items: center; }
+  #dlgLugar h3 { margin: 0; }
+  #dlgLugar .cerrar { border: none; background: var(--fondo); color: var(--texto); border-radius: 8px; padding: 4px 10px; cursor: pointer; font-size: 1rem; }
+  #dlgLugar .dlg-fotos { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-top: 10px; }
+  #dlgLugar figure { margin: 0; }
+  #dlgLugar figure img { width: 100%; max-height: 60vh; object-fit: contain; background: #000; border-radius: 8px; }
+  #dlgLugar figcaption { font-size: .75rem; color: var(--suave); text-align: center; }
+  #dlgLugar summary { cursor: pointer; margin-top: 10px; font-size: .9rem; }
+  #dlgLugar a { color: var(--acento); }
+  #dlgObj { width: min(1040px, 95vw); max-height: 92vh; border: none; border-radius: 20px; padding: 0; background: var(--panel); color: var(--texto); box-shadow: var(--sombra-alta); }
+  #dlgObj::backdrop { background: rgba(8,10,18,.7); backdrop-filter: blur(4px); }
+  #dlgObj[open] { animation: aparecer .25s ease both; }
+  .fotos-gim { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: var(--fondo); border-radius: 12px; padding: 8px;
+    border-top: 5px solid var(--c); }
+  .fotos-gim .tit-gim { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; font-size: 1.05rem; }
+  .foto-gim { margin: 0; }
+  .foto-gim:only-of-type { grid-column: 1 / -1; }
+  .foto-gim img { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: #000; border-radius: 8px; image-rendering: auto; }
+  .foto-gim figcaption { font-size: .75rem; color: var(--suave); text-align: center; margin-top: 2px; }
+  @media (max-width: 700px) { .fotos-gim { grid-template-columns: 1fr; } }
+  svg.mapa.real { background: #1b2c3a; }
+  svg.mapa .area { fill: transparent; stroke: none; cursor: pointer; }
+  svg.mapa .area.si { fill: var(--rojo); fill-opacity: .55; stroke: #fff; stroke-width: .6; }
+  svg.mapa .area.foco { fill: #ffd400 !important; fill-opacity: .8; }
+  svg.mapa .oculto { fill: transparent; stroke: none; }
+  svg.mapa .oculto.foco { fill: #ffd400 !important; fill-opacity: .9; stroke: #222; stroke-width: .5; }
+  svg.mapa .punto { fill: #ff2a1a; stroke: #fff; stroke-width: .25em; stroke-width: 1.2; }
+  svg.mapa .punto.v1 { fill: #b0001e; }
+  svg.mapa .punto.v2 { fill: #8a2be2; }
+  svg.mapa.real text { fill: #fff; stroke: #000; stroke-width: .3em; }
+  svg.mapa.real text.rojo { fill: #ffdf3a; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .vistas { display: flex; gap: 6px; }
+  .vistas button { border: 2px solid #fff; background: transparent; color: #fff; border-radius: 999px; padding: 6px 16px;
+    font-weight: 700; cursor: pointer; font-size: .9rem; }
+  .vistas button.activa { background: #fff; color: var(--acento); }
+  .lista-gim { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; margin-top: 16px; }
+  .gim-btn { display: flex; gap: 10px; align-items: center; text-align: left; background: var(--panel); color: var(--texto);
+    border: 1px solid var(--borde); border-left: 6px solid var(--c); border-radius: 12px; padding: 8px 10px; cursor: pointer; font: inherit; }
+  .gim-btn:hover, .gim-btn.activa { box-shadow: 0 0 0 2px var(--c); }
+  .gim-btn img { width: 48px; height: 48px; object-fit: contain; border-radius: 8px; background: var(--fondo); flex: none; }
+  .gim-btn b { display: block; font-size: .92rem; }
+  .gim-btn small { color: var(--suave); font-size: .75rem; }
+  .gim-det { margin-top: 16px; background: var(--panel); border: 1px solid var(--borde); border-radius: 12px; padding: 16px; }
+  .gim-cab { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 14px; }
+  .gim-cab .ilus svg { width: 100%; height: auto; display: block; border-radius: 12px; }
+  .lider { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    background: var(--fondo); border-radius: 12px; padding: 10px; }
+  .lider img { max-width: 100%; height: 190px; object-fit: contain; }
+  .lider h2 { margin: 6px 0 2px; font-size: 1.35rem; }
+  .lider small { color: var(--suave); }
+  .equipo { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin-top: 14px; }
+  .miembro { border: 1px solid var(--borde); border-radius: 12px; padding: 10px; }
+  .miembro .top { display: flex; gap: 8px; align-items: center; }
+  .miembro .top img { width: 72px; height: 72px; object-fit: contain; }
+  .miembro h4 { margin: 0; font-size: .95rem; }
+  .miembro .fila { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-top: 6px; font-size: .75rem; }
+  .miembro .fila > span.e { color: var(--suave); width: 100%; }
+  .miembro .tipo { font-size: .72rem; padding: 2px 8px; }
+  .resumen { margin-top: 14px; padding: 12px; border-radius: 12px; background: var(--fondo); }
+  .resumen h3 { margin: 0 0 8px; font-size: 1rem; }
+  .alterna { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .alterna button { border: 1px solid var(--borde); background: var(--fondo); color: var(--texto); border-radius: 8px; padding: 5px 12px; cursor: pointer; }
+  .alterna button.activa { background: var(--acento); border-color: var(--acento); color: #fff; }
+  @media (max-width: 700px) { .gim-cab { grid-template-columns: 1fr; } .lider img { height: 150px; } }
+  @media (max-width: 700px) { svg.mapa { min-width: 640px; max-height: none; } }
+  svg.mapa .zona { fill: var(--ruta); fill-opacity: .18; stroke: var(--ruta); stroke-width: .3; }
+  svg.mapa .zona.si { fill: var(--rojo); fill-opacity: .28; stroke: var(--rojo); stroke-width: .5; }
+  svg.mapa .zona.foco { fill: #ffd400 !important; fill-opacity: .35; }
+  svg.mapa text.zona-n { font-style: italic; opacity: .75; }
+  svg.mapa text.isla { font-weight: 700; opacity: .5; }
+  :root { --mar: #cfe6f5; --tierra: #e4efd6; --borde-tierra: #b9cfa1; --ruta: #b7a98d; --ciudad: #59606e; --rojo: #e3350d; --etq: #2b3140; }
+  @media (prefers-color-scheme: dark) {
+    :root { --mar: #1b2c3a; --tierra: #26322a; --borde-tierra: #3b4d3e; --ruta: #6f6655; --ciudad: #aab0bf; --etq: #dfe3ec; }
+  }
+  svg.mapa .tierra { fill: var(--tierra); stroke: var(--borde-tierra); stroke-width: .5; }
+  svg.mapa .ruta { fill: none; stroke: var(--ruta); stroke-linecap: round; stroke-linejoin: round; }
+  svg.mapa .ruta.m { stroke: #6aa6d6; stroke-dasharray: 1.6 1.4; }
+  svg.mapa .ruta.si { stroke: var(--rojo); stroke-dasharray: none; }
+  svg.mapa .ciudad { fill: var(--ciudad); }
+  svg.mapa .lugar { fill: var(--ruta); }
+  svg.mapa .si.ciudad, svg.mapa .si.lugar { fill: var(--rojo); }
+  svg.mapa .anillo { fill: none; stroke: var(--rojo); stroke-width: .6; animation: latido 1.6s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+  svg.mapa .foco { stroke: #ffd400 !important; fill: #ffd400 !important; }
+  svg.mapa .ruta.foco { fill: none !important; }
+  svg.mapa text { fill: var(--etq); paint-order: stroke; stroke: var(--tierra); stroke-width: .35em; stroke-linejoin: round; pointer-events: none; }
+  svg.mapa text.rojo { fill: var(--rojo); font-weight: 700; font-size: 1.12em; }
+  svg.mapa [data-id] { cursor: pointer; }
+  @keyframes latido { from { transform: scale(1); opacity: 1; } to { transform: scale(2.4); opacity: 0; } }
+  .lugares { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+  .lugarc { border: 1px solid var(--borde); border-radius: 10px; padding: 8px 10px; }
+  .lugarc.foco { border-color: #e0b800; box-shadow: 0 0 0 2px #e0b80055; }
+  .lugarc h4 { margin: 0 0 4px; font-size: .92rem; display: flex; gap: 6px; align-items: center; }
+  .lugarc h4 .sinmapa { font-size: .7rem; color: var(--suave); font-weight: 400; }
+  .enc { font-size: .82rem; color: var(--suave); margin: 2px 0; }
+  .enc b { color: var(--texto); font-weight: 600; }
+  .etq { display: inline-block; font-size: .7rem; padding: 1px 6px; border-radius: 6px; background: var(--fondo);
+    border: 1px solid var(--borde); color: var(--texto); margin-left: 3px; }
+  .etq.ver { background: #3b6fd622; border-color: #3b6fd666; }
+  @media (max-width: 700px) {
+    .controles { grid-template-columns: 1fr; }
+    .ficha { grid-template-columns: 1fr; }
+    .foto img { width: 180px; height: 180px; }
+  }
+
+  /* ================= Diseño moderno ================= */
+  :root {
+    --fondo: #eef1f7; --panel: #ffffff; --panel-2: #f5f7fb; --texto: #151a2d; --suave: #6a7290; --borde: #e3e7f0;
+    --acento: #ef3b2c; --acento-2: #ff7a45; --radio: 18px;
+    --sombra: 0 1px 2px rgba(16,24,40,.05), 0 10px 30px -12px rgba(16,24,40,.18);
+    --sombra-alta: 0 2px 4px rgba(16,24,40,.06), 0 18px 40px -14px rgba(16,24,40,.28);
+    --c1: #9fa19f; --c2: #9fa19f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --fondo: #0c0f17; --panel: #151a26; --panel-2: #1b2131; --texto: #eaedf6; --suave: #96a0ba; --borde: #252c3d;
+      --sombra: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px -14px rgba(0,0,0,.7); --sombra-alta: 0 2px 6px rgba(0,0,0,.5), 0 20px 44px -14px rgba(0,0,0,.8); }
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: "Inter", "Segoe UI", system-ui, sans-serif; font-size: 15px; line-height: 1.45;
+    background: radial-gradient(1200px 500px at 85% -10%, rgba(239,59,44,.10), transparent 60%),
+                radial-gradient(900px 400px at -10% 10%, rgba(59,111,214,.08), transparent 60%), var(--fondo);
+    background-attachment: fixed; -webkit-font-smoothing: antialiased; }
+  h1, h2, h3, .foto h2, .lider h2 { font-family: "Outfit", "Inter", sans-serif; letter-spacing: -.01em; }
+
+  /* Cabecera */
+  header { position: sticky; top: 0; z-index: 20; padding: 0; display: block;
+    background: linear-gradient(120deg, rgba(225,40,30,.94), rgba(255,110,64,.92)); backdrop-filter: blur(10px) saturate(1.3);
+    box-shadow: 0 6px 24px -10px rgba(200,30,20,.55); }
+  .cab { max-width: 1140px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+  .marca { display: flex; align-items: center; gap: 12px; }
+  .logo { width: 40px; height: 40px; filter: drop-shadow(0 3px 6px rgba(0,0,0,.25)); transition: transform .6s cubic-bezier(.3,1.6,.5,1); }
+  .marca:hover .logo { transform: rotate(-200deg); }
+  header h1 { margin: 0; font-size: 1.45rem; font-weight: 800; line-height: 1.1; }
+  header small { display: block; font-size: .78rem; opacity: .9; }
+  .vistas { background: rgba(0,0,0,.18); padding: 4px; border-radius: 999px; gap: 2px; }
+  .vistas button { border: none; padding: 8px 18px; font-size: .9rem; color: #fff; transition: background .2s, color .2s; }
+  .vistas button:hover { background: rgba(255,255,255,.15); }
+  .vistas button.activa { background: #fff; color: var(--acento); box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+
+  main { max-width: 1140px; padding: 22px 20px 40px; }
+  @keyframes aparecer { from { transform: translateY(8px); } to { transform: none; } }
+
+  /* Paneles */
+  .controles, .ficha, .donde, .gim-det { background: var(--panel); border: 1px solid var(--borde); border-radius: var(--radio); box-shadow: var(--sombra); }
+  .controles { padding: 18px; gap: 14px; }
+  .controles label { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px; }
+  select, input[type=search] { font: inherit; padding: 11px 14px; border-radius: 12px; border: 1.5px solid var(--borde); background-color: var(--panel-2);
+    transition: border-color .15s, box-shadow .15s, background-color .15s; }
+  select { appearance: none; -webkit-appearance: none; padding-right: 38px; cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center; }
+  input[type=search] { padding-left: 40px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7' fill='none' stroke='%23888' stroke-width='2.4'/%3E%3Cpath d='M20 20l-4-4' stroke='%23888' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: 14px center; }
+  select:hover, input[type=search]:hover { border-color: color-mix(in srgb, var(--acento) 35%, var(--borde)); }
+  select:focus, input[type=search]:focus { outline: none; border-color: var(--acento); box-shadow: 0 0 0 4px color-mix(in srgb, var(--acento) 18%, transparent); background-color: var(--panel); }
+  .opciones { font-size: .88rem; }
+  .opciones label { text-transform: none; letter-spacing: 0; font-size: .88rem; font-weight: 500; margin: 0; color: var(--texto); }
+  .opciones span { display: inline-flex; align-items: center; gap: 6px; }
+  input[type=checkbox] { accent-color: var(--acento); width: 17px; height: 17px; cursor: pointer; }
+  .contador { background: var(--panel-2); border: 1px solid var(--borde); padding: 4px 12px; border-radius: 999px; font-weight: 600; font-size: .78rem; }
+
+  /* Ficha del Pokémon */
+  .ficha { margin-top: 20px; padding: 0; overflow: hidden; grid-template-columns: 300px 1fr; gap: 0; animation: aparecer .35s ease both; }
+  .foto { position: relative; padding: 24px 18px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--c1) 55%, transparent), transparent 62%),
+                linear-gradient(160deg, color-mix(in srgb, var(--c1) 30%, var(--panel)), color-mix(in srgb, var(--c2) 26%, var(--panel))); }
+  .foto::after { content: ""; position: absolute; width: 230px; height: 230px; top: 139px; left: 50%; transform: translate(-50%, -50%);
+    border-radius: 50%; border: 18px solid rgba(255,255,255,.18); pointer-events: none; }
+  .foto img { width: 230px; height: 230px; position: relative; z-index: 1; filter: drop-shadow(0 14px 18px rgba(0,0,0,.28)); animation: flotar 4s ease-in-out infinite; }
+  @keyframes flotar { 50% { transform: translateY(-6px); } }
+  .foto h2 { font-size: 1.9rem; font-weight: 800; margin: 10px 0 2px; position: relative; z-index: 1; }
+  .foto .num { font-weight: 600; letter-spacing: .03em; }
+  .foto .chips { position: relative; z-index: 1; }
+  .ficha > div:last-child { padding: 20px 22px; }
+  .seccion { font-family: "Outfit", sans-serif; font-size: .8rem; font-weight: 700; color: var(--texto); border: none; padding: 0;
+    margin: 6px 0 12px; display: flex; align-items: center; gap: 8px; letter-spacing: .08em; }
+  .seccion::before { content: ""; width: 4px; height: 16px; border-radius: 4px; background: linear-gradient(var(--acento), var(--acento-2)); }
+  .bloque { background: var(--panel-2); border: 1px solid var(--borde); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; }
+  .bloque h3 { font-family: "Inter", sans-serif; font-size: .9rem; font-weight: 700; margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+  /* Chips de tipo */
+  .tipo { padding: 5px 12px; font-size: .8rem; font-weight: 700; letter-spacing: .01em; border-radius: 999px;
+    background-image: linear-gradient(180deg, rgba(255,255,255,.22), rgba(0,0,0,.08)); box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 2px 6px -2px rgba(0,0,0,.35);
+    transition: transform .15s; }
+  .tipo:hover { transform: translateY(-1px); }
+  .tipo b { background: rgba(0,0,0,.25); padding: 1px 7px; }
+
+  /* Dónde encontrarlo */
+  .donde { margin-top: 20px; padding: 20px 22px; }
+  .donde h2 { font-size: 1.35rem; font-weight: 800; }
+  .pestanas { flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .pestanas button { font: inherit; font-size: .82rem; font-weight: 600; padding: 7px 14px; border-radius: 999px; background: var(--panel-2);
+    border: 1px solid var(--borde); transition: all .15s; }
+  .pestanas button:hover { border-color: var(--acento); }
+  .pestanas button.activa { background: linear-gradient(135deg, var(--acento), var(--acento-2)); border-color: transparent; box-shadow: 0 6px 16px -8px var(--acento); }
+  svg.mapa { border-radius: 14px; box-shadow: inset 0 0 0 1px var(--borde); }
+  .mapa-caja { border-radius: 14px; }
+  .lugares { gap: 10px; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); }
+  .lugarc { background: var(--panel-2); border-radius: 14px; padding: 12px 14px; transition: transform .15s, box-shadow .15s, border-color .15s; }
+  .lugarc:hover { transform: translateY(-2px); box-shadow: var(--sombra); }
+  .lugarc h4 { font-size: .95rem; }
+  .lugarc .mini { width: 72px; height: 54px; border-radius: 10px; box-shadow: 0 4px 10px -4px rgba(0,0,0,.4); }
+  .lugarc .ver-lugar { background: color-mix(in srgb, var(--acento) 12%, transparent); padding: 2px 8px; border-radius: 999px; }
+  .etq { border-radius: 999px; padding: 1px 8px; }
+  #dlgLugar { border-radius: 20px; padding: 18px 20px; box-shadow: var(--sombra-alta); }
+  #dlgLugar[open] { animation: aparecer .25s ease both; }
+  #dlgLugar::backdrop { background: rgba(8,10,18,.7); backdrop-filter: blur(4px); }
+  #dlgLugar figure img { border-radius: 12px; }
+
+  /* Gimnasios */
+  .lista-gim { gap: 12px; margin-top: 20px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+  .gim-btn { border: 1px solid var(--borde); border-radius: 16px; padding: 10px 12px; box-shadow: var(--sombra);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--c) 16%, var(--panel)), var(--panel) 60%);
+    transition: transform .15s, box-shadow .15s; position: relative; overflow: hidden; }
+  .gim-btn::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--c); }
+  .gim-btn:hover { transform: translateY(-3px); box-shadow: var(--sombra-alta); }
+  .gim-btn.activa { box-shadow: 0 0 0 2px var(--c), var(--sombra-alta); }
+  .gim-btn img { width: 56px; height: 56px; border-radius: 12px; background: color-mix(in srgb, var(--c) 14%, var(--panel-2)); }
+  .gim-det { margin-top: 20px; padding: 20px 22px; animation: aparecer .3s ease both; }
+  .contador { display: inline-flex; align-items: center; gap: 8px; }
+  .progreso { width: 70px; height: 7px; border-radius: 99px; background: linear-gradient(90deg, #22c55e var(--p), color-mix(in srgb, var(--suave) 25%, transparent) var(--p)); }
+  .capturar { font: inherit; font-size: .82rem; font-weight: 700; margin-top: 10px; border-radius: 999px; padding: 7px 16px; cursor: pointer; position: relative; z-index: 1;
+    border: 2px solid rgba(255,255,255,.7); background: rgba(255,255,255,.35); color: var(--texto); backdrop-filter: blur(4px); transition: all .15s; }
+  .capturar:hover { background: rgba(255,255,255,.6); }
+  .capturar.on { background: #22c55e; border-color: #22c55e; color: #fff; }
+  .excl { position: relative; z-index: 1; margin-top: 6px; font-size: .75rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: rgba(0,0,0,.25); color: #fff; }
+  .huecos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 12px; }
+  .hueco { position: relative; border: 2px dashed var(--borde); border-radius: 16px; padding: 10px; min-height: 170px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 4px; text-align: center; }
+  .hueco.lleno { border: 1px solid var(--borde); background: linear-gradient(170deg, color-mix(in srgb, var(--c) 22%, var(--panel)), var(--panel) 70%); box-shadow: var(--sombra); }
+  .hueco img { width: 84px; height: 84px; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(0,0,0,.25)); }
+  .hueco .chips { justify-content: center; } .hueco .tipo { font-size: .66rem; padding: 2px 7px; }
+  .hueco input { width: 100%; font: inherit; font-size: .82rem; padding: 7px 10px; border-radius: 10px; border: 1.5px solid var(--borde); background: var(--panel-2); color: var(--texto); }
+  .vacio-h { font-size: 2rem; color: var(--suave); line-height: 1; }
+  .quitar { position: absolute; top: 6px; right: 6px; border: none; background: rgba(0,0,0,.25); color: #fff; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: .7rem; }
+  .tabla-eq { max-height: none; } .tabla-eq th img { width: 36px; height: 36px; object-fit: contain; }
+  .tabla-eq td.m { text-align: center; font-weight: 700; }
+  .m2, .m4 { background: color-mix(in srgb, #ef4444 22%, transparent); color: #dc2626; } .m4 { background: color-mix(in srgb, #ef4444 40%, transparent); }
+  .m05, .m025 { background: color-mix(in srgb, #22c55e 20%, transparent); color: #16a34a; } .m0 { background: color-mix(in srgb, #3b82f6 22%, transparent); color: #2563eb; }
+  tr.malo td:first-child { box-shadow: inset 4px 0 0 #ef4444; }
+  .sug { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 6px 0; }
+  .sug-l { display: flex; gap: 6px; flex-wrap: wrap; }
+  .sug-p { font: inherit; font-size: .78rem; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--borde); background: var(--panel); color: var(--texto);
+    border-radius: 999px; padding: 2px 10px 2px 2px; cursor: pointer; }
+  .sug-p:hover { border-color: var(--acento); } .sug-p img { width: 28px; height: 28px; object-fit: contain; }
+  .obed { margin-top: 12px; display: grid; grid-template-columns: auto auto auto 1fr; gap: 12px; align-items: center; padding: 12px 16px;
+    border-radius: 16px; background: var(--panel-2); border: 1px solid var(--borde); }
+  .obed.sube { background: linear-gradient(120deg, color-mix(in srgb, #22c55e 16%, var(--panel-2)), var(--panel-2) 70%); border-color: color-mix(in srgb, #22c55e 40%, var(--borde)); }
+  .obed-n { text-align: center; background: var(--panel); border: 1px solid var(--borde); border-radius: 12px; padding: 6px 12px; min-width: 78px; }
+  .obed-n small { display: block; font-size: .66rem; text-transform: uppercase; letter-spacing: .06em; color: var(--suave); }
+  .obed-n b { font-family: "Outfit", sans-serif; font-size: 1.15rem; }
+  .obed.sube .obed-n.fin { border-color: #22c55e; } .obed.sube .obed-n.fin b { color: #16a34a; }
+  .obed-f { color: var(--suave); font-size: 1.2rem; }
+  .obed-t b { display: block; font-size: .95rem; } .obed-t small { color: var(--suave); font-size: .78rem; }
+  .obed-mini { display: inline-block; margin-left: 4px; font-size: .68rem; font-weight: 700; color: #16a34a; background: color-mix(in srgb, #22c55e 14%, transparent);
+    border-radius: 999px; padding: 1px 7px; }
+  @media (max-width: 700px) { .obed { grid-template-columns: auto auto auto; } .obed-t { grid-column: 1 / -1; } }
+  #recoGim { margin-top: 12px; }
+  .reco { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .reco-p { font: inherit; color: var(--texto); border: 1px solid var(--borde); border-radius: 14px; padding: 10px; cursor: pointer; text-align: center;
+    background: linear-gradient(170deg, color-mix(in srgb, var(--c) 20%, var(--panel)), var(--panel) 70%); display: flex; flex-direction: column; align-items: center; gap: 3px;
+    transition: transform .15s, box-shadow .15s; }
+  .reco-p:hover { transform: translateY(-3px); box-shadow: var(--sombra-alta); }
+  .reco-p img { width: 76px; height: 76px; object-fit: contain; filter: drop-shadow(0 5px 6px rgba(0,0,0,.25)); }
+  .reco-p .chips { justify-content: center; } .reco-p .tipo { font-size: .66rem; padding: 2px 7px; }
+  .reco-p small { font-size: .7rem; color: var(--suave); }
+  .filtros { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 10px; }
+  .filtro-tipos { display: flex; flex-wrap: wrap; gap: 6px; }
+  .filtro-tipos button { font: inherit; font-size: .74rem; font-weight: 700; color: #fff; border: none; border-radius: 999px; padding: 4px 11px;
+    cursor: pointer; opacity: .45; filter: saturate(.6); transition: opacity .15s, transform .15s, filter .15s; text-shadow: 0 1px 1px rgba(0,0,0,.35); }
+  .filtro-tipos button:hover { opacity: .8; }
+  .filtro-tipos button.on { opacity: 1; filter: none; transform: translateY(-1px); box-shadow: 0 3px 8px -3px rgba(0,0,0,.4); }
+  .filtro-otros { display: flex; flex-wrap: wrap; gap: 8px; }
+  .filtro-otros select { width: auto; flex: 1 1 170px; padding-top: 8px; padding-bottom: 8px; font-size: .85rem; }
+  .boton-sec { font: inherit; font-size: .82rem; font-weight: 600; border: 1.5px solid var(--borde); background: var(--panel-2); color: var(--texto);
+    border-radius: 12px; padding: 7px 14px; cursor: pointer; }
+  .boton-sec:hover { border-color: var(--acento); color: var(--acento); }
+  .extra { margin-top: 20px; background: var(--panel); border: 1px solid var(--borde); border-radius: var(--radio); box-shadow: var(--sombra); padding: 20px 22px; }
+  .extra-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .desc-pkdx { font-style: italic; color: var(--suave); background: var(--panel-2); border-left: 4px solid var(--acento); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; }
+  .stat { display: grid; grid-template-columns: 78px 36px 1fr; align-items: center; gap: 8px; font-size: .82rem; margin: 5px 0; }
+  .stat span { color: var(--suave); } .stat b { text-align: right; }
+  .barra { height: 9px; background: color-mix(in srgb, var(--suave) 18%, transparent); border-radius: 99px; overflow: hidden; }
+  .barra i { display: block; height: 100%; border-radius: 99px; transition: width .5s ease; }
+  .hab { margin-bottom: 8px; } .hab p { margin: 2px 0 0; font-size: .82rem; color: var(--suave); }
+  .etq.aviso { background: color-mix(in srgb, #eab308 20%, transparent); border-color: #eab30866; }
+  .evo { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding: 4px 2px; }
+  .evo-col { display: flex; flex-direction: column; gap: 6px; }
+  .flecha { font-size: 1.4rem; color: var(--suave); }
+  .evo-p { font: inherit; color: var(--texto); background: var(--panel); border: 1px solid var(--borde); border-radius: 14px; padding: 8px 10px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; min-width: 120px; max-width: 170px; transition: transform .15s, box-shadow .15s; }
+  .evo-p:hover { transform: translateY(-2px); box-shadow: var(--sombra); }
+  .evo-p.actual { border-color: var(--acento); box-shadow: 0 0 0 2px color-mix(in srgb, var(--acento) 30%, transparent); }
+  .evo-p img { width: 72px; height: 72px; object-fit: contain; }
+  .evo-p small { font-size: .7rem; color: var(--suave); text-align: center; }
+  .mini-p button { padding: 5px 12px; font-size: .78rem; }
+  .tabla-mov { max-height: 420px; overflow: auto; border-radius: 12px; border: 1px solid var(--borde); }
+  .tabla-mov table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+  .tabla-mov th { position: sticky; top: 0; background: var(--panel); text-align: left; padding: 8px; font-size: .72rem; color: var(--suave); text-transform: uppercase; letter-spacing: .05em; }
+  .tabla-mov td { padding: 6px 8px; border-top: 1px solid var(--borde); }
+  .tabla-mov tr:hover td { background: color-mix(in srgb, var(--acento) 6%, transparent); }
+  .tabla-mov .pre { color: var(--suave); white-space: nowrap; }
+  .tabla-mov .tipo { font-size: .7rem; padding: 2px 8px; }
+  .cl { text-transform: capitalize; } .cl.físico { color: #f97316; } .cl.especial { color: #3b82f6; } .cl.estado { color: var(--suave); }
+  @media (max-width: 760px) { .extra-grid { grid-template-columns: 1fr; } .extra { padding: 16px; } }
+  .titulo-grupo { grid-column: 1 / -1; margin: 10px 0 0; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .titulo-grupo::before { content: ""; width: 4px; height: 18px; border-radius: 4px; background: linear-gradient(var(--acento), var(--acento-2)); }
+  .lider { background: linear-gradient(170deg, color-mix(in srgb, var(--c) 28%, var(--panel-2)), var(--panel-2)); border-radius: 16px; border: 1px solid var(--borde); }
+  .lider img { filter: drop-shadow(0 10px 14px rgba(0,0,0,.3)); }
+  .lider h2 { font-size: 1.6rem; font-weight: 800; }
+  .fotos-gim { background: var(--panel-2); border: 1px solid var(--borde); border-top: 5px solid var(--c); border-radius: 16px; padding: 12px; }
+  .fotos-gim .tit-gim b { font-family: "Outfit", sans-serif; font-size: 1.15rem; }
+  .foto-gim img { border-radius: 12px; }
+  .resumen { background: var(--panel-2); border: 1px solid var(--borde); border-radius: 16px; padding: 14px 16px; }
+  .resumen h3 { font-size: 1.1rem; }
+  .resumen .bloque { background: transparent; border: none; padding: 0; margin-bottom: 10px; }
+  .equipo { gap: 12px; }
+  .miembro { border-radius: 16px; padding: 12px; background: linear-gradient(160deg, color-mix(in srgb, var(--c) 18%, var(--panel)), var(--panel) 65%);
+    box-shadow: var(--sombra); transition: transform .15s; }
+  .miembro:hover { transform: translateY(-2px); }
+  .miembro .top img { width: 84px; height: 84px; filter: drop-shadow(0 6px 8px rgba(0,0,0,.25)); }
+  .miembro h4 { font-family: "Outfit", sans-serif; font-size: 1.05rem; }
+  .alterna button { font: inherit; font-size: .85rem; border-radius: 999px; padding: 7px 14px; }
+  .alterna button.activa { background: linear-gradient(135deg, var(--acento), var(--acento-2)); border-color: transparent; }
+  .nota { line-height: 1.5; }
+  ::selection { background: color-mix(in srgb, var(--acento) 30%, transparent); }
+  @media (max-width: 760px) {
+    .cab { padding: 8px 12px; flex-wrap: nowrap; }
+    header small { display: none; }
+    header h1 { font-size: 1.2rem; }
+    .logo { width: 32px; height: 32px; }
+    .vistas button { padding: 6px 11px; font-size: .8rem; }
+    main { padding: 16px 14px 32px; }
+    .ficha { grid-template-columns: 1fr; }
+    .foto img { width: 190px; height: 190px; }
+    .foto::after { width: 190px; height: 190px; top: 119px; }
+    .ficha > div:last-child, .donde, .gim-det { padding: 16px; }
+  }
+  /* Mi partida y Herramientas */
+  .vistas { flex-wrap: wrap; justify-content: center; }
+  @media (max-width: 760px) { .vistas { border-radius: 18px; } .vistas button { padding: 7px 12px; font-size: .82rem; } }
+  .pestanas.sub { margin: 0; }
+  .boton { font: inherit; font-size: .85rem; font-weight: 700; border: none; border-radius: 999px; padding: 9px 18px; cursor: pointer; color: #fff;
+    background: linear-gradient(135deg, var(--acento), var(--acento-2)); box-shadow: 0 6px 16px -8px var(--acento); display: inline-flex; align-items: center; gap: 6px; }
+  .boton.boton-sec { color: var(--texto); background: var(--panel-2); box-shadow: none; }
+  .fila-ctrl { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin: 10px 0; }
+  .fila-ctrl > span { display: flex; flex-direction: column; gap: 4px; }
+  .etq-ctrl { display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--suave); font-weight: 600; margin-bottom: 6px; }
+  .num-in { font: inherit; width: 84px; padding: 9px 10px; border-radius: 10px; border: 1.5px solid var(--borde); background: var(--panel-2); color: var(--texto); }
+  .extra input[type=search] { width: 100%; }
+  .dos-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+  .dos-col > .extra { min-width: 0; }
+  @media (max-width: 760px) { .dos-col { grid-template-columns: 1fr; } }
+  .mini-sp { width: 40px; height: 40px; object-fit: contain; vertical-align: middle; }
+  .minis { display: flex; flex-wrap: wrap; gap: 4px; }
+  .mini-b { border: 1px solid var(--borde); background: var(--panel-2); border-radius: 10px; padding: 2px; cursor: pointer; line-height: 0; }
+  .mini-b:hover { border-color: var(--acento); }
+  .mini-b.cap { background: color-mix(in srgb, #3fae5a 22%, var(--panel-2)); border-color: #3fae5a88; }
+  .enlace { font: inherit; color: var(--texto); background: none; border: none; padding: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-align: left; }
+  .enlace:hover b { color: var(--acento); }
+  .enlace span { display: flex; flex-direction: column; } .enlace small { font-size: .74rem; }
+  .sin-lugar { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 6px 12px; margin-bottom: 10px; }
+  .sin-lugar .enlace { background: var(--panel-2); border: 1px solid var(--borde); border-radius: 12px; padding: 4px 10px 4px 4px; }
+  .sin-lugar .enlace.en-eq { border-color: var(--acento); box-shadow: 0 0 0 2px color-mix(in srgb, var(--acento) 25%, transparent); }
+  .lugar-chip { font: inherit; font-size: .8rem; font-weight: 600; border: 1px solid var(--borde); background: var(--panel-2); color: var(--texto); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+  .lugar-chip:hover { border-color: var(--acento); }
+  .lugar-chip small { color: var(--suave); font-weight: 500; }
+  .ruta { position: relative; }
+  .ruta-paso { display: grid; grid-template-columns: 40px 1fr; gap: 14px; position: relative; padding-bottom: 18px; }
+  .ruta-paso::before { content: ""; position: absolute; left: 19px; top: 40px; bottom: 0; width: 2px; background: var(--borde); }
+  .ruta-num { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-family: "Outfit", sans-serif; font-weight: 800; color: #fff; background: linear-gradient(135deg, var(--acento), var(--acento-2)); }
+  .ruta-cuerpo h3 { margin: 8px 0 10px; }
+  .ruta-lugares { gap: 6px; }
+  .ruta-gim { margin-top: 12px; display: flex; gap: 12px; align-items: center; padding: 10px 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--c) 45%, var(--borde));
+    background: linear-gradient(120deg, color-mix(in srgb, var(--c) 22%, var(--panel)), var(--panel-2)); }
+  .ruta-gim img { width: 56px; height: 56px; object-fit: contain; }
+  .ruta-gim > div { display: flex; flex-direction: column; gap: 3px; } .ruta-gim small { color: var(--suave); font-size: .78rem; }
+  .ruta-gim b { font-size: 1.05rem; margin-right: 6px; }
+  .ruta-gim .tipo { align-self: flex-start; }
+  .tabla-mov-caja { overflow: auto; }
+  .tabla-zona, .tabla-nat, .tabla-st { width: 100%; border-collapse: collapse; font-size: .86rem; }
+  .tabla-zona th, .tabla-nat th, .tabla-st th { text-align: left; font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--suave); padding: 6px 8px; border-bottom: 1px solid var(--borde); }
+  .tabla-zona td, .tabla-nat td, .tabla-st td, .tabla-st tbody th { padding: 5px 8px; border-bottom: 1px solid color-mix(in srgb, var(--borde) 60%, transparent); }
+  .tabla-zona tr.cap td { background: color-mix(in srgb, #3fae5a 10%, transparent); }
+  .tabla-st tbody th { text-transform: none; font-size: .86rem; color: var(--texto); letter-spacing: 0; }
+  .tabla-st .sf { font-weight: 800; font-size: 1rem; }
+  .sube { color: #3fae5a; font-weight: 700; } .baja { color: #d6584a; font-weight: 700; }
+  .zonas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+  .zona-card { background: var(--panel-2); border: 1px solid var(--borde); border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+  .zona-card .contador { margin-left: 6px; }
+  .prog-cab { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+  .anillo { --p: 0; width: 140px; height: 140px; border-radius: 50%; display: grid; place-content: center; text-align: center; flex: none;
+    background: radial-gradient(closest-side, var(--panel) 78%, transparent 79%), conic-gradient(var(--acento) calc(var(--p) * 1%), color-mix(in srgb, var(--suave) 20%, transparent) 0); }
+  .anillo b { font-family: "Outfit", sans-serif; font-size: 1.8rem; } .anillo small { color: var(--suave); }
+  .prog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+  @media (max-width: 760px) { .prog-grid { grid-template-columns: 1fr; } }
+  .prog-fila { display: grid; grid-template-columns: minmax(90px, 160px) 1fr 64px; gap: 10px; align-items: center; margin: 6px 0; font-size: .85rem; }
+  .prog-fila > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .prog-fila b { text-align: right; }
+  .poke-mini { display: flex; gap: 10px; align-items: center; margin-top: 10px; } .poke-mini .mini-sp { width: 64px; height: 64px; }
+  .barra-dano { position: relative; height: 10px; border-radius: 99px; background: color-mix(in srgb, var(--suave) 18%, transparent); overflow: hidden; margin-top: 4px; }
+  .barra-dano i { position: absolute; inset: 0 auto 0 0; background: var(--acento); border-radius: 99px; opacity: .55; }
+  .barra-dano s { position: absolute; inset: 0 auto 0 0; background: inherit; }
+  .barra-dano.grande { height: 18px; } .barra-dano.grande i { opacity: 1; } .barra-dano.grande s { background: rgba(0,0,0,.18); }
+  .dano-res { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+  .dano-num { display: flex; flex-direction: column; } .dano-num b { font-family: "Outfit", sans-serif; font-size: 2rem; } .dano-num small { color: var(--suave); }
+  .vs-fila { display: grid; grid-template-columns: 170px 1fr minmax(160px, 260px); gap: 12px; align-items: center; padding: 8px 0; border-top: 1px solid var(--borde); }
+  .vs-rival, .vs-mejor { display: flex; gap: 8px; align-items: center; } .vs-rival > div, .vs-mejor > div { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .vs-mejor small { color: var(--suave); font-size: .78rem; }
+  .vs-peligro { font-size: .82rem; } .vs-peligro.alto { color: #d6584a; }
+  @media (max-width: 760px) { .vs-fila { grid-template-columns: 1fr; } }
+  .cmp-grid { display: grid; gap: 0 14px; } .cmp-grid.n2 { grid-template-columns: 1fr 1fr; } .cmp-grid.n3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 760px) { .cmp-grid.n2, .cmp-grid.n3 { grid-template-columns: 1fr; } }
+  .cmp-col { text-align: center; border-top: 4px solid var(--c); min-width: 0; }
+  .cmp-col .seccion, .cmp-col .chips { justify-content: center; } .cmp-col p { text-align: center; }
+  .cmp-img { width: 130px; height: 130px; object-fit: contain; filter: drop-shadow(0 8px 12px rgba(0,0,0,.25)); }
+  .cmp-col h3 { margin: 4px 0 6px; }
+  .cmp-stats { text-align: left; margin: 12px 0; } .cmp-stats .stat.top b { color: #3fae5a; }
+  .etq-grupo { font-size: .78rem; font-weight: 700; border-radius: 999px; padding: 3px 10px; background: color-mix(in srgb, var(--acento) 15%, var(--panel-2)); border: 1px solid var(--borde); }
+  .datos-cr { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 14px 0; }
+  .datos-cr > div { background: var(--panel-2); border: 1px solid var(--borde); border-radius: 12px; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; }
+  .datos-cr small { font-size: .72rem; color: var(--suave); }
+  .aviso-cr { background: color-mix(in srgb, #eab308 15%, transparent); border: 1px solid #eab30866; border-radius: 10px; padding: 8px 12px; font-size: .85rem; }
+  .mov-huevo { padding: 6px 0; border-bottom: 1px solid color-mix(in srgb, var(--borde) 60%, transparent); }
+  .mov-cab { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-bottom: 10px; font-size: .9rem; }
+  .quiz-marcador { display: flex; gap: 14px; margin-left: auto; font-size: .85rem; color: var(--suave); } .quiz-marcador b { color: var(--texto); }
+  .quiz-caja { text-align: center; padding: 10px 0; }
+  .quiz-preg { font-size: 1.15rem; font-weight: 600; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
+  .quiz-ops { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 14px 0; }
+  .quiz-ops button { font: inherit; font-weight: 700; font-size: 1rem; min-width: 74px; padding: 10px 16px; border-radius: 12px; border: 1.5px solid var(--borde); background: var(--panel-2); color: var(--texto); cursor: pointer; }
+  .quiz-ops button:hover:not(:disabled) { border-color: var(--acento); }
+  .quiz-ops button.ok { background: #3fae5a; border-color: #3fae5a; color: #fff; } .quiz-ops button.mal { background: #d6584a; border-color: #d6584a; color: #fff; }
+  .quiz-feed { min-height: 44px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; }
+  .quiz-feed.ok > b { color: #3fae5a; } .quiz-feed.mal > b { color: #d6584a; }
+  .quiz-sombra { display: grid; place-items: center; width: 260px; height: 260px; margin: 0 auto; border-radius: 50%;
+    background: radial-gradient(circle, #ffffff 0%, #dfe5f2 55%, #b9c4dd 100%); box-shadow: inset 0 0 0 6px rgba(255,255,255,.4), 0 10px 30px -12px rgba(0,0,0,.5); }
+  .quiz-sombra img { width: 220px; height: 220px; object-fit: contain; filter: brightness(0); transition: filter .5s; }
+  .quiz-sombra img.ver { filter: drop-shadow(0 10px 14px rgba(0,0,0,.3)); }
+  /* Tercera tanda */
+  /* Cabecera: marca y buscador arriba, pestañas como barra inferior */
+  .cab { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "marca busca" "vistas vistas";
+    align-items: center; gap: 12px 28px; padding: 14px 20px 0; flex-wrap: nowrap; }
+  .marca { grid-area: marca; }
+  .busca-global { grid-area: busca; position: relative; justify-self: end; width: min(100%, 460px); }
+  .busca-global input, .busca-global input:hover { width: 100%; border: 1px solid rgba(255,255,255,.35); border-radius: 12px; padding: 10px 44px 10px 40px; font-size: .9rem;
+    color: #fff; background-color: rgba(255,255,255,.16); box-shadow: inset 0 1px 0 rgba(255,255,255,.12); transition: background-color .15s, border-color .15s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7' fill='none' stroke='white' stroke-width='2.4'/%3E%3Cpath d='M20 20l-4-4' stroke='white' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E"); }
+  .busca-global input::placeholder { color: rgba(255,255,255,.82); }
+  .busca-global input:hover { background-color: rgba(255,255,255,.22); }
+  .busca-global input:focus { outline: none; color: var(--texto); background-color: var(--panel); border-color: transparent; box-shadow: 0 8px 24px -8px rgba(0,0,0,.45);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7' fill='none' stroke='%23888' stroke-width='2.4'/%3E%3Cpath d='M20 20l-4-4' stroke='%23888' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E"); }
+  .busca-global input:focus::placeholder { color: var(--suave); }
+  .busca-global kbd { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font: 600 .72rem "Inter", sans-serif; color: rgba(255,255,255,.9);
+    border: 1px solid rgba(255,255,255,.4); border-radius: 6px; padding: 1px 7px; pointer-events: none; }
+  .busca-global input:focus ~ kbd { display: none; }
+  .cab .vistas { grid-area: vistas; display: flex; flex-wrap: nowrap; justify-content: flex-start; gap: 4px; background: none; padding: 0; border-radius: 0;
+    margin: 0 -4px; overflow-x: auto; scrollbar-width: none; }
+  .cab .vistas::-webkit-scrollbar { display: none; }
+  .cab .vistas button { flex: none; position: relative; border-radius: 10px 10px 0 0; padding: 10px 16px 12px; font-weight: 600; color: rgba(255,255,255,.85); background: none; box-shadow: none; }
+  .cab .vistas button:hover { color: #fff; background: rgba(255,255,255,.12); }
+  .cab .vistas button.activa { color: #fff; background: rgba(0,0,0,.14); box-shadow: none; }
+  .cab .vistas button.activa::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: #fff; }
+  @media (max-width: 640px) {
+    .cab { grid-template-columns: 1fr; grid-template-areas: "marca" "busca" "vistas"; padding: 10px 12px 0; gap: 10px; }
+    .busca-global { justify-self: stretch; width: 100%; }
+    .busca-global kbd { display: none; }
+    .cab .vistas button { padding: 9px 12px 11px; font-size: .84rem; }
+  }
+  [hidden] { display: none !important; }
+  .bg-sug { position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 50; background: var(--panel); border: 1px solid var(--borde); border-radius: 14px;
+    box-shadow: 0 18px 40px -12px rgba(0,0,0,.45); max-height: 60vh; overflow: auto; padding: 4px; }
+  .sug-i { width: 100%; display: flex; align-items: center; gap: 10px; border: none; background: none; color: var(--texto); font: inherit; font-size: .88rem; text-align: left; padding: 6px 10px; border-radius: 10px; cursor: pointer; }
+  .sug-i.on, .sug-i:hover { background: color-mix(in srgb, var(--acento) 14%, transparent); }
+  .sug-i img { width: 30px; height: 30px; object-fit: contain; } .sug-i i { width: 14px; height: 14px; border-radius: 50%; margin: 0 8px; flex: none; }
+  .sug-i span { flex: 1; } .sug-i small { color: var(--suave); font-size: .74rem; }
+  .btn-grito { position: relative; z-index: 2; margin-top: 8px; font: inherit; font-size: .8rem; font-weight: 700; border: none; border-radius: 999px; padding: 6px 14px; cursor: pointer;
+    background: rgba(255,255,255,.85); color: #1d2130; box-shadow: 0 4px 12px -6px rgba(0,0,0,.4); }
+  .btn-grito:hover { background: #fff; }
+  .mov-chip { display: inline-flex; align-items: center; gap: 5px; font-size: .78rem; font-weight: 600; border-radius: 999px; padding: 3px 10px;
+    border: 1px solid color-mix(in srgb, var(--c) 55%, var(--borde)); background: color-mix(in srgb, var(--c) 16%, var(--panel-2)); }
+  .mov-chip small { color: var(--suave); }
+  .mejores-lista { display: grid; gap: 8px; margin-top: 14px; }
+  .mejor-mov { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; background: var(--panel-2); border: 1px solid var(--borde); border-radius: 12px; padding: 9px 14px; font-size: .88rem; }
+  .mejor-mov > b:first-child { min-width: 150px; font-size: .95rem; }
+  .capt-lista { display: grid; gap: 6px; }
+  .capt-fila { display: grid; grid-template-columns: 28px minmax(110px, 1fr) 2fr 62px 90px; gap: 10px; align-items: center; font-size: .86rem; }
+  .capt-fila img { width: 28px; height: 28px; image-rendering: pixelated; } .capt-fila > b { text-align: right; }
+  @media (max-width: 640px) { .capt-fila { grid-template-columns: 28px 1fr 60px; } .capt-fila .barra, .capt-fila small { display: none; } }
+  .obj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; margin-top: 10px; }
+  .obj-card { display: flex; gap: 10px; align-items: flex-start; background: var(--panel-2); border: 1px solid var(--borde); border-radius: 12px; padding: 8px 12px; }
+  .obj-card img { width: 36px; height: 36px; image-rendering: pixelated; flex: none; } .obj-card p { margin: 2px 0 0; font-size: .8rem; color: var(--suave); line-height: 1.45; }
+  .nz-resumen { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+  .nz-resumen > div { background: var(--panel-2); border: 1px solid var(--borde); border-radius: 12px; padding: 8px 16px; display: flex; flex-direction: column; align-items: center; min-width: 90px; }
+  .nz-resumen b { font-family: "Outfit", sans-serif; font-size: 1.5rem; } .nz-resumen small { color: var(--suave); }
+  .nz-reglas { margin-bottom: 10px; font-size: .88rem; } .nz-reglas summary { cursor: pointer; font-weight: 700; }
+  .tabla-nz td { vertical-align: middle; } .tabla-nz select, .tabla-nz input[type=text] { font: inherit; font-size: .85rem; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--borde); background: var(--panel-2); color: var(--texto); max-width: 190px; }
+  .tabla-nz select { padding-right: 30px; background-position: right 8px center; }
+  .tabla-nz tr.nz-muerto td { background: color-mix(in srgb, #d6584a 12%, transparent); } .tabla-nz tr.nz-fallido td { opacity: .6; }
+  .tabla-nz tr.nz-equipo td { background: color-mix(in srgb, #3fae5a 10%, transparent); }
+  .aviso-nz { display: block; color: #e0a92a; font-size: .74rem; margin-top: 3px; }
+  .cementerio { display: flex; flex-wrap: wrap; gap: 8px; } .cementerio > div { display: flex; flex-direction: column; align-items: center; background: var(--panel-2); border: 1px solid var(--borde); border-radius: 12px; padding: 6px 12px; font-size: .82rem; }
+  .shiny-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+  .shiny-b { display: flex; flex-direction: column; align-items: center; gap: 2px; font: inherit; font-size: .72rem; color: var(--texto); background: var(--panel-2); border: 1.5px solid var(--borde); border-radius: 12px; padding: 4px; cursor: pointer; }
+  .shiny-b img { width: 72px; height: 72px; object-fit: contain; opacity: .55; filter: grayscale(.6); transition: all .2s; }
+  .shiny-b.on { border-color: #e0a92a; background: color-mix(in srgb, #e0a92a 14%, var(--panel-2)); } .shiny-b.on img { opacity: 1; filter: drop-shadow(0 0 6px rgba(250,192,0,.6)); }
+  .shiny-b.on span::before { content: "✨ "; }
+  .riv-lista { display: grid; gap: 8px; }
+  .riv-card { background: var(--panel); border: 1px solid var(--borde); border-radius: var(--radio); box-shadow: var(--sombra); overflow: hidden; }
+  .riv-card summary { list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; padding: 10px 16px; }
+  .riv-card summary::-webkit-details-marker { display: none; }
+  .riv-card[open] summary { border-bottom: 1px solid var(--borde); }
+  .riv-sum { display: flex; flex-direction: column; } .riv-det { padding: 4px 16px 16px; }
+  .riv-card .minis .mini-sp { width: 44px; height: 44px; }
+  .evo-fila { display: grid; grid-template-columns: 200px 1fr 1fr; gap: 14px; padding: 12px 0; border-top: 1px solid var(--borde); align-items: start; }
+  .evo-yo { display: flex; gap: 8px; align-items: center; } .evo-yo > div { display: flex; flex-direction: column; gap: 4px; } .evo-yo .num-in { width: 64px; padding: 5px 8px; }
+  .evo-sig { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; } .evo-sig > div { display: flex; flex-direction: column; font-size: .84rem; }
+  @media (max-width: 760px) { .evo-fila { grid-template-columns: 1fr; } }
+  .auto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; margin-top: 12px; }
+  .auto-card { display: flex; gap: 8px; align-items: center; background: linear-gradient(120deg, color-mix(in srgb, var(--c) 18%, var(--panel)), var(--panel-2)); border: 1px solid var(--borde); border-radius: 12px; padding: 8px 12px; }
+  .auto-card > div { display: flex; flex-direction: column; gap: 4px; } .auto-card small { font-size: .76rem; }
+  #modoGim { display: flex; width: fit-content; }
+  /* Objetos */
+  .filtro-cat { display: flex; flex-wrap: wrap; gap: 6px; }
+  .filtro-cat button { font: inherit; font-size: .8rem; font-weight: 600; border: 1px solid var(--borde); background: var(--panel-2); color: var(--texto); border-radius: 999px; padding: 6px 13px; cursor: pointer; }
+  .filtro-cat button span { color: var(--suave); font-weight: 500; }
+  .filtro-cat button.on { background: linear-gradient(135deg, var(--acento), var(--acento-2)); color: #fff; border-color: transparent; }
+  .filtro-cat button.on span { color: rgba(255,255,255,.8); }
+  .obj-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; margin-top: 10px; }
+  .obj-b { display: flex; gap: 10px; align-items: center; text-align: left; font: inherit; color: var(--texto); background: var(--panel); border: 1px solid var(--borde);
+    border-radius: 14px; padding: 8px 12px; cursor: pointer; box-shadow: var(--sombra); transition: transform .12s, border-color .12s; }
+  .obj-b:hover { transform: translateY(-2px); border-color: var(--acento); }
+  .obj-b img { width: 40px; height: 40px; image-rendering: pixelated; flex: none; object-fit: contain; }
+  .obj-b .mt-ico { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; color: #fff; font: 800 .72rem "Outfit", sans-serif; flex: none; }
+  .obj-b > span { display: flex; flex-direction: column; min-width: 0; }
+  .obj-b b { font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .obj-b small { color: var(--suave); font-size: .74rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .od-cab { display: flex; gap: 16px; align-items: center; padding: 18px 20px; position: sticky; top: 0; z-index: 2;
+    background: linear-gradient(120deg, color-mix(in srgb, var(--acento) 18%, var(--panel)), var(--panel)); border-bottom: 1px solid var(--borde); }
+  .od-cab .od-img { width: 72px; height: 72px; border-radius: 18px; background: var(--panel-2); display: grid; place-items: center; flex: none; border: 1px solid var(--borde); }
+  .od-cab .od-img img { width: 56px; height: 56px; image-rendering: pixelated; }
+  .od-cab h2 { margin: 0; font-size: 1.5rem; } .od-cab .cerrar { margin-left: auto; border: none; background: var(--panel-2); color: var(--texto); border-radius: 10px; padding: 6px 12px; cursor: pointer; font-size: 1rem; }
+  .od-cuerpo { padding: 16px 20px 20px; display: grid; gap: 14px; }
+  .od-desc { font-size: .95rem; line-height: 1.55; background: var(--panel-2); border-left: 4px solid var(--acento); border-radius: 10px; padding: 10px 14px; margin: 0; }
+  .od-datos { display: flex; flex-wrap: wrap; gap: 8px; }
+  .od-datos > span { background: var(--panel-2); border: 1px solid var(--borde); border-radius: 10px; padding: 5px 12px; font-size: .85rem; }
+  .od-lugar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; background: var(--panel-2); border: 1px solid var(--borde); border-radius: 12px; padding: 10px 14px; }
+  .od-lugar p { margin: 0; font-size: .9rem; }
+  .od-texto { flex: 1; min-width: 220px; }
+  .od-det { margin: 6px 0 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+  .od-det li { font-size: .86rem; line-height: 1.45; background: color-mix(in srgb, var(--acento) 8%, var(--panel)); border-radius: 8px; padding: 6px 10px; }
+  .od-det-grande li { font-size: .92rem; }
+  .od-det li.gen { background: var(--panel); border: 1px dashed var(--borde); }
+  .od-mapa { border: 1px solid var(--borde); border-radius: 14px; padding: 12px; background: var(--panel-2); }
+  .od-mapa .mapa-caja svg.mapa { max-height: 60vh; }
+  .od-fotos { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; margin-top: 10px; }
+  .od-fotos figure { margin: 0; } .od-fotos img { width: 100%; max-height: 52vh; object-fit: contain; background: #000; border-radius: 12px; }
+  .od-fotos figcaption { font-size: .76rem; color: var(--suave); text-align: center; margin-top: 4px; }
+  .od-evo { display: flex; flex-wrap: wrap; gap: 6px; }
+  .od-evo button { display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: .84rem; border: 1px solid var(--borde); background: var(--panel-2); color: var(--texto); border-radius: 999px; padding: 2px 12px 2px 2px; cursor: pointer; }
+  .od-evo button:hover { border-color: var(--acento); }
+  .od-evo img { width: 36px; height: 36px; object-fit: contain; }
+  .boton:disabled { opacity: .5; cursor: not-allowed; }
+  /* Tabla de tipos */
+  .seg { display: inline-flex; background: var(--panel-2); border: 1.5px solid var(--borde); border-radius: 12px; padding: 3px; gap: 3px; flex-wrap: wrap; }
+  .seg button { font: inherit; font-size: .85rem; font-weight: 600; border: none; background: none; color: var(--texto); padding: 7px 14px; border-radius: 9px; cursor: pointer; }
+  .seg button.on { background: linear-gradient(135deg, var(--acento), var(--acento-2)); color: #fff; box-shadow: 0 4px 12px -6px var(--acento); }
+  .calc-filas { display: grid; gap: 8px; }
+  .calc-fila { display: grid; grid-template-columns: 92px 1fr; gap: 10px; align-items: center; background: var(--panel-2); border: 1px solid var(--borde); border-radius: 12px; padding: 9px 12px; }
+  .calc-fila > b { font-family: "Outfit", sans-serif; font-size: 1.05rem; text-align: center; border-radius: 9px; padding: 4px 0; color: #fff; }
+  .calc-fila .m4 { background: #b4232a; } .calc-fila .m2 { background: #e0592a; } .calc-fila .m1 { background: #8a90a3; }
+  .calc-fila .m05 { background: #3b82c4; } .calc-fila .m025 { background: #2a5b9c; } .calc-fila .m0 { background: #2b2f3a; }
+  .calc-poke { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .calc-poke button { font: inherit; font-size: .78rem; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--borde); background: var(--panel-2); color: var(--texto); border-radius: 999px; padding: 2px 10px 2px 2px; cursor: pointer; }
+  .calc-poke button:hover { border-color: var(--acento); }
+  .calc-poke img { width: 30px; height: 30px; object-fit: contain; }
+  .tabla-caja { overflow: auto; border-radius: 12px; border: 1px solid var(--borde); }
+  .tabla-tipos { border-collapse: collapse; font-size: .78rem; margin: 0 auto; }
+  .tabla-tipos th, .tabla-tipos td { width: 38px; min-width: 38px; height: 34px; text-align: center; padding: 0; border: 1px solid color-mix(in srgb, var(--borde) 70%, transparent); }
+  .tabla-tipos th { cursor: pointer; color: #fff; font-weight: 700; text-shadow: 0 1px 1px rgba(0,0,0,.4); }
+  .tabla-tipos thead th { height: 46px; font-size: .7rem; position: sticky; top: 0; z-index: 2; }
+  .tabla-tipos tbody th { width: auto; min-width: 92px; text-align: left; padding: 0 10px; position: sticky; left: 0; z-index: 1; }
+  .tabla-tipos .esq { background: var(--panel); color: var(--suave); font-size: .65rem; cursor: default; text-shadow: none; z-index: 3; left: 0; line-height: 1.2; }
+  .tabla-tipos td { font-weight: 800; cursor: default; transition: filter .1s; }
+  .tabla-tipos td.c2 { background: #3fae5a; color: #fff; } .tabla-tipos td.c05 { background: #d6584a; color: #fff; } .tabla-tipos td.c0 { background: #2b2f3a; color: #fff; }
+  .tabla-tipos td.c1 { color: transparent; }
+  .tabla-tipos td.hl, .tabla-tipos th.hl { filter: brightness(1.15); box-shadow: inset 0 0 0 100px color-mix(in srgb, var(--acento) 14%, transparent); }
+  .tabla-tipos td.hl.c1 { color: var(--suave); }
+  .tabla-tipos td.cruz { outline: 2px solid var(--texto); outline-offset: -2px; }
+  .tabla-tipos td.cambio { outline: 3px dashed #fac000; outline-offset: -3px; }
+  .tabla-tipos td.cambio.c1 { color: var(--texto); }
+  .leyenda-tab { gap: 6px !important; color: var(--suave); font-size: .8rem; }
+  .leyenda-tab i { font-style: normal; font-weight: 800; color: #fff; border-radius: 6px; padding: 1px 7px; margin-left: 6px; }
+  .leyenda-tab .c2 { background: #3fae5a; } .leyenda-tab .c05 { background: #d6584a; } .leyenda-tab .c0 { background: #2b2f3a; }
+  .cambios-lista { margin: 8px 0 0; padding-left: 18px; font-size: .85rem; line-height: 1.6; }
+  @media (max-width: 640px) { .calc-fila { grid-template-columns: 64px 1fr; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<header><div class="cab">
+  <div class="marca">
+    <svg class="logo" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="#fff"/><path d="M2 20a18 18 0 0 1 36 0Z" fill="#ef3b2c"/><path d="M2 20h36" stroke="#1b1f2e" stroke-width="3"/><circle cx="20" cy="20" r="18" fill="none" stroke="#1b1f2e" stroke-width="3"/><circle cx="20" cy="20" r="6" fill="#fff" stroke="#1b1f2e" stroke-width="3"/></svg>
+    <div><h1>PokéGuía</h1><small>Tipos, ubicaciones y gimnasios de cada juego</small></div>
+  </div>
+  <nav class="vistas"><button data-vista="vistaTipos" class="activa">Pokémon</button><button data-vista="vistaGim">Gimnasios</button><button data-vista="vistaEq">Mi equipo</button><button data-vista="vistaPart">Mi partida</button><button data-vista="vistaObj">Objetos</button><button data-vista="vistaTab">Tabla de tipos</button><button data-vista="vistaHer">Herramientas</button></nav>
+</div></header>
+<main>
+ <section id="vistaGim" hidden>
+  <div class="controles">
+    <div style="grid-column: 1 / -1">
+      <label for="juegoGim">Juego</label>
+      <select id="juegoGim"></select>
+    </div>
+  </div>
+  <div id="listaGim" class="lista-gim"></div>
+  <div id="detalleGim"></div>
+  <p class="nota">Equipos: PokémonDB (pokemondb.net). Fotos de los líderes: sprites de PokémonDB y Pokémon Showdown. Fotos de los gimnasios: WikiDex (wikidex.net). Si no hay foto, la app dibuja una ilustración. Uso personal.</p>
+ </section>
+ <section id="vistaEq" hidden>
+  <div class="controles">
+    <div style="grid-column: 1 / -1">
+      <label for="juegoEq">Juego</label>
+      <select id="juegoEq"></select>
+    </div>
+  </div>
+  <div class="extra">
+    <h2 class="titulo-grupo" style="margin-top:0">Tu equipo</h2>
+    <div id="huecos" class="huecos"></div>
+    <datalist id="listaEq"></datalist>
+  </div>
+  <div id="analisisEq"></div>
+  <p class="nota">El equipo se guarda en este navegador, uno por juego.</p>
+ </section>
+ <section id="vistaPart" hidden>
+  <div class="controles">
+    <div style="grid-column: 1 / -1">
+      <label for="juegoPart">Juego</label>
+      <select id="juegoPart"></select>
+    </div>
+    <div class="pestanas sub" id="subPart" style="grid-column: 1 / -1">
+      <button data-s="ruta" class="activa">Ruta del juego</button><button data-s="zonas">Pokédex por zonas</button><button data-s="faltan">Me faltan</button><button data-s="nuzlocke">Nuzlocke</button><button data-s="shiny">Shiny</button><button data-s="progreso">Progreso</button><button data-s="copia">Copia de seguridad</button>
+    </div>
+  </div>
+  <div id="contPart"></div>
+ </section>
+ <section id="vistaObj" hidden>
+  <div class="controles">
+    <div>
+      <label for="juegoObj">Juego</label>
+      <select id="juegoObj"></select>
+    </div>
+    <div>
+      <label for="busObj">Buscar objeto</label>
+      <input id="busObj" type="search" placeholder="Nombre, lugar o movimiento…" autocomplete="off">
+    </div>
+    <div class="filtro-cat" id="catObj" style="grid-column: 1 / -1"></div>
+  </div>
+  <div id="listaObj"></div>
+  <p class="nota">Ubicaciones y tiendas: Serebii (itemdex). MT: PokémonDB. Descripciones, precios, evoluciones y objetos de Pokémon salvajes: PokeAPI. Mapas de situación y capturas de los lugares: WikiDex. Uso personal.</p>
+ </section>
+ <section id="vistaHer" hidden>
+  <div class="controles">
+    <div style="grid-column: 1 / -1">
+      <label for="juegoHer">Juego</label>
+      <select id="juegoHer"></select>
+    </div>
+    <div class="pestanas sub" id="subHer" style="grid-column: 1 / -1">
+      <button data-s="dano" class="activa">Calculadora de daño</button><button data-s="comparar">Comparador</button><button data-s="stats">Naturalezas, IV y EV</button><button data-s="movs">Buscador de movimientos</button><button data-s="mejores">Mejores movimientos</button><button data-s="captura">Captura</button><button data-s="crianza">Crianza</button><button data-s="quiz">Quiz</button>
+    </div>
+  </div>
+  <div id="contHer"></div>
+  <datalist id="listaHer"></datalist>
+ </section>
+ <section id="vistaTab" hidden>
+  <div class="controles">
+    <div>
+      <label for="juegoTab">Juego</label>
+      <select id="juegoTab"></select>
+    </div>
+    <div>
+      <label>Modo</label>
+      <div class="seg" id="modoTab"><button type="button" data-m="def" class="on">Me atacan (defensa)</button><button type="button" data-m="atk">Ataco con…</button></div>
+    </div>
+    <div style="grid-column: 1 / -1">
+      <label id="ayudaTab">Elige uno o dos tipos del Pokémon que recibe el ataque</label>
+      <div class="filtro-tipos" id="tiposTab"></div>
+    </div>
+  </div>
+  <div id="calcTab" class="extra"></div>
+  <div class="extra">
+    <h2 class="titulo-grupo" style="margin-top:0">Tabla completa <small class="vacio" id="genTab"></small></h2>
+    <div class="opciones" style="margin:4px 0 12px">
+      <span><input type="checkbox" id="cambiosTab"> <label for="cambiosTab">Marcar lo que cambia respecto a la tabla actual</label></span>
+      <span class="leyenda-tab"><i class="c2">×2</i> eficaz <i class="c05">½</i> poco eficaz <i class="c0">0</i> no afecta</span>
+    </div>
+    <div class="tabla-caja"><table class="tabla-tipos" id="tablaTab"></table></div>
+    <p class="nota">Filas: tipo del ataque. Columnas: tipo del Pokémon que lo recibe. Pulsa una fila o una columna para verla en la calculadora.</p>
+  </div>
+ </section>
+ <section id="vistaTipos">
+  <div class="controles">
+    <div>
+      <label for="juego">Juego</label>
+      <select id="juego"></select>
+    </div>
+    <div>
+      <label for="buscar">Buscar Pokémon</label>
+      <input id="buscar" type="search" placeholder="Nombre o número…" autocomplete="off">
+    </div>
+    <div style="grid-column: 1 / -1">
+      <label for="pokemon">Pokémon del juego</label>
+      <select id="pokemon"></select>
+    </div>
+    <div class="filtros">
+      <div class="filtro-tipos" id="filtroTipos" aria-label="Filtrar por tipo"></div>
+      <div class="filtro-otros">
+        <select id="filtroGen" aria-label="Filtrar por generación"><option value="">Todas las generaciones</option></select>
+        <select id="filtroEstado" aria-label="Filtrar por capturados"><option value="">Todos</option><option value="si">Capturados</option><option value="no">Me faltan</option></select>
+        <select id="filtroExcl" aria-label="Exclusivos"><option value="">Cualquier edición</option></select>
+        <button id="limpiarFiltros" class="boton-sec" type="button">Quitar filtros</button>
+      </div>
+    </div>
+    <div class="opciones">
+      <span id="cajaNacional"><input type="checkbox" id="nacional"> <label for="nacional">Pokédex Nacional del juego (todos los que se pueden tener)</label></span>
+      <span><input type="checkbox" id="spriteJuego" checked> <label for="spriteJuego">Sprite del juego</label></span>
+      <span class="contador" id="contador"></span>
+    </div>
+  </div>
+  <div id="ficha"></div>
+  <div id="infoExtra"></div>
+  <div id="donde"></div>
+  <p class="nota">Datos: PokeAPI (tipos, Pokédex y ubicaciones hasta Espada/Escudo) y PKHeX, GPL-3 (ubicaciones de Diamante Brillante/Perla Reluciente, Leyendas Arceus, Escarlata/Púrpura y Z-A). Mapas reales y puntos de aparición: Pokéarth (serebii.net). Uso personal.</p>
+ </section>
+</main>
+<script src="imagenes/indice.js" onerror="window.IMG_LOCAL = {}"></script>
+<script>
+  // Modo sin internet: si una imagen está descargada en imagenes/, se usa la copia local
+  (function () {
+    const local = () => window.IMG_LOCAL || {};
+    const cambiar = img => { const s = img.getAttribute('src'); const l = s && local()[s]; if (l) img.setAttribute('src', l); };
+    new MutationObserver(ms => {
+      for (const m of ms) {
+        if (m.type === 'attributes') { if (m.target.tagName === 'IMG') cambiar(m.target); continue; }
+        m.addedNodes.forEach(n => { if (n.nodeType !== 1) return; if (n.tagName === 'IMG') cambiar(n); n.querySelectorAll && n.querySelectorAll('img').forEach(cambiar); });
+      }
+    }).observe(document.documentElement, {subtree: true, childList: true, attributes: true, attributeFilter: ['src']});
+  })();
+</script>
+<script src="datos.js"></script>
+<script src="extra.js"></script>
+<script src="estadisticas_antiguas.js"></script>
+<script src="movimientos.js"></script>
+<script src="movs/descripciones.js"></script>
+<script src="gimnasios.js"></script>
+<script src="gimnasios_fotos.js"></script>
+<script src="obediencia.js"></script>
+<script src="crianza.js"></script>
+<script src="lugares_fotos.js"></script>
+<script src="mapas.js"></script>
+<script src="mapas_reales.js"></script>
+<script src="mapas_reales_extra.js"></script>
+<script src="ubic/nombres.js"></script>
+<script src="ubic/nombres_pkhex.js"></script>
+<script>
+const TIPOS = ['normal','fighting','flying','poison','ground','rock','bug','ghost','steel','fire','water','grass','electric','psychic','ice','dragon','dark','fairy'];
+const NOMBRE = {normal:'Normal',fighting:'Lucha',flying:'Volador',poison:'Veneno',ground:'Tierra',rock:'Roca',bug:'Bicho',
+  ghost:'Fantasma',steel:'Acero',fire:'Fuego',water:'Agua',grass:'Planta',electric:'Eléctrico',psychic:'Psíquico',ice:'Hielo',
+  dragon:'Dragón',dark:'Siniestro',fairy:'Hada'};
+const COLOR = {normal:'#9fa19f',fighting:'#ff8000',flying:'#81b9ef',poison:'#9141cb',ground:'#915121',rock:'#afa981',bug:'#91a119',
+  ghost:'#704170',steel:'#60a1b8',fire:'#e62829',water:'#2980ef',grass:'#3fa129',electric:'#fac000',psychic:'#ef4179',ice:'#3dcef3',
+  dragon:'#5060e1',dark:'#624d4e',fairy:'#ef70ef'};
+
+// Tabla actual (Gen 6+): atacante -> {defensor: multiplicador}
+const BASE = {
+  normal:{rock:.5,ghost:0,steel:.5},
+  fighting:{normal:2,flying:.5,poison:.5,rock:2,bug:.5,ghost:0,steel:2,psychic:.5,ice:2,dark:2,fairy:.5},
+  flying:{fighting:2,rock:.5,bug:2,steel:.5,grass:2,electric:.5},
+  poison:{poison:.5,ground:.5,rock:.5,ghost:.5,steel:0,grass:2,fairy:2},
+  ground:{flying:0,poison:2,rock:2,bug:.5,steel:2,fire:2,grass:.5,electric:2},
+  rock:{fighting:.5,flying:2,ground:.5,bug:2,steel:.5,fire:2,ice:2},
+  bug:{fighting:.5,flying:.5,poison:.5,ghost:.5,steel:.5,fire:.5,grass:2,psychic:2,dark:2,fairy:.5},
+  ghost:{normal:0,ghost:2,psychic:2,dark:.5},
+  steel:{rock:2,steel:.5,fire:.5,water:.5,electric:.5,ice:2,fairy:2},
+  fire:{rock:.5,bug:2,steel:2,fire:.5,water:.5,grass:2,ice:2,dragon:.5},
+  water:{ground:2,rock:2,fire:2,water:.5,grass:.5,dragon:.5},
+  grass:{flying:.5,poison:.5,ground:2,rock:2,bug:.5,steel:.5,fire:.5,water:2,grass:.5,dragon:.5},
+  electric:{flying:2,ground:0,water:2,grass:.5,electric:.5,dragon:.5},
+  psychic:{fighting:2,poison:2,steel:.5,psychic:.5,dark:0},
+  ice:{flying:2,ground:2,steel:.5,fire:.5,water:.5,grass:2,ice:.5,dragon:2},
+  dragon:{steel:.5,dragon:2,fairy:0},
+  dark:{fighting:.5,ghost:2,psychic:2,dark:.5,fairy:.5},
+  fairy:{fighting:2,poison:.5,steel:.5,fire:.5,dragon:2,dark:2}
+};
+
+function tablaGen(gen) {
+  const t = JSON.parse(JSON.stringify(BASE));
+  let tipos = TIPOS.slice();
+  if (gen <= 5) {
+    // Sin tipo Hada; Acero resistía Fantasma y Siniestro
+    tipos = tipos.filter(x => x !== 'fairy');
+    delete t.fairy;
+    for (const a in t) delete t[a].fairy;
+    t.ghost.steel = .5; t.dark.steel = .5;
+  }
+  if (gen === 1) {
+    // Sin Acero ni Siniestro; diferencias de la 1.ª generación
+    tipos = tipos.filter(x => x !== 'steel' && x !== 'dark');
+    delete t.steel; delete t.dark;
+    for (const a in t) { delete t[a].steel; delete t[a].dark; }
+    t.ghost.psychic = 0;      // error del juego original
+    t.bug.poison = 2;         // Bicho era eficaz contra Veneno
+    t.poison.bug = 2;         // Veneno era eficaz contra Bicho
+    delete t.ice.fire;        // Fuego no resistía Hielo
+  }
+  return {tipos, t};
+}
+
+const D = window.DATOS;
+const POR_ESPECIE = {};
+for (const p of D.pokemon) (POR_ESPECIE[p.s] ||= []).push(p);
+const $ = id => document.getElementById(id);
+let listaActual = [];
+
+function tiposEnGen(p, gen) {
+  for (const [g, ts] of p.p) if (g >= gen) return ts;
+  return p.t;
+}
+
+function formaDisponible(p, j) {
+  if (p.d) return true;
+  if (p.i > j.orden) return false;
+  if (p.m) return j.megas;
+  if (j.id === '23') return p.i <= 14;               // DBPR: sin formas regionales
+  if (j.id === '24') return p.i <= 14 || p.i === 26; // Leyendas Arceus: solo Hisui y antiguas
+  return true;
+}
+
+function nombrePoke(p) {
+  const n = D.especies[p.s].n;
+  if (p.d) return n;
+  if (p.m) return p.f || ('Mega-' + n);
+  return n + (p.f ? ' (' + p.f + ')' : '');
+}
+
+function rellenarJuegos() {
+  const sel = $('juego');
+  [...D.juegos].sort((a, b) => b.orden - a.orden).forEach(j => {
+    const o = document.createElement('option');
+    o.value = j.id; o.textContent = `${j.nombre} — Gen ${j.gen}`;
+    sel.appendChild(o);
+  });
+}
+
+function juegoActual() { return D.juegos.find(j => j.id === $('juego').value); }
+
+function construirLista() {
+  const j = juegoActual();
+  const nac = $('nacional').checked && j.nacional.length;
+  $('cajaNacional').style.display = j.nacional.length ? '' : 'none';
+  const entradas = nac ? j.nacional.map(s => [s, s]) : j.dex;
+  listaActual = [];
+  for (const [s, num] of entradas) {
+    for (const p of (POR_ESPECIE[s] || [])) {
+      if (!formaDisponible(p, j)) continue;
+      listaActual.push({p, num, nombre: nombrePoke(p)});
+    }
+  }
+  prepararFiltros(j);
+  filtrar();
+  calcularExclusivos(j).then(() => { if (juegoActual() === j) { rellenarExclusivos(); filtrar(); } });
+}
+
+// ---------- Filtros ----------
+const filtro = { tipos: new Set() };
+function prepararFiltros(j) {
+  const {tipos} = tablaGen(j.gen);
+  for (const t of [...filtro.tipos]) if (!tipos.includes(t)) filtro.tipos.delete(t);
+  $('filtroTipos').innerHTML = tipos.map(t => `<button type="button" data-t="${t}" class="${filtro.tipos.has(t) ? 'on' : ''}" style="background:${COLOR[t]}">${NOMBRE[t]}</button>`).join('');
+  $('filtroTipos').querySelectorAll('button').forEach(b => b.onclick = () => {
+    filtro.tipos.has(b.dataset.t) ? filtro.tipos.delete(b.dataset.t) : filtro.tipos.add(b.dataset.t);
+    b.classList.toggle('on'); filtrar();
+  });
+  const fg = $('filtroGen'), previo = fg.value;
+  fg.innerHTML = '<option value="">Todas las generaciones</option>' + Array.from({length: j.gen}, (_, i) => `<option value="${i + 1}">Generación ${i + 1}</option>`).join('');
+  if (+previo <= j.gen) fg.value = previo;
+  rellenarExclusivos();
+}
+
+// ---------- Pokédex personal (se guarda en este navegador) ----------
+const CLAVE_CAP = 'pokeguia.capturados.';
+function capturados(jid) {
+  try { return new Set(JSON.parse(localStorage.getItem(CLAVE_CAP + jid) || '[]')); } catch { return new Set(); }
+}
+function marcarCapturado(jid, sid, si) {
+  const c = capturados(jid);
+  si ? c.add(sid) : c.delete(sid);
+  try { localStorage.setItem(CLAVE_CAP + jid, JSON.stringify([...c])); } catch {}
+}
+
+// ---------- Exclusivos de edición ----------
+let exclusivos = {}, versionesJuego = [];
+async function calcularExclusivos(j) {
+  exclusivos = {}; versionesJuego = [];
+  const u = await cargarUbic(j.id);
+  if (!u) return;
+  if (j.id === '25') {   // Escarlata/Púrpura: puntos de Serebii marcados por edición
+    const tab = {};
+    for (const r of ['paldea', 'kitakami', 'terarium']) {
+      const pts = await cargarPuntos(r);
+      for (const [pid, l] of Object.entries(pts)) for (const [, , v] of l) (tab[pid] ||= new Set()).add(v);
+    }
+    for (const [pid, vs] of Object.entries(tab)) if (vs.size === 1 && !vs.has(0)) exclusivos[pid] = vs.has(1) ? 'Escarlata' : 'Púrpura';
+    // Exclusivos conocidos de la historia principal (especies)
+    const SV = { 'Escarlata': [246, 247, 248, 425, 426, 434, 435, 633, 634, 635, 690, 691, 765, 874, 936, 207, 472, 984, 985, 986, 987, 988, 989, 1005, 1007],
+                 'Púrpura': [371, 372, 373, 200, 429, 316, 317, 885, 886, 887, 692, 693, 766, 875, 937, 190, 424, 990, 991, 992, 993, 994, 995, 1006, 1008] };
+    for (const [v, l] of Object.entries(SV)) for (const s of l) { const pd = (POR_ESPECIE[s] || []).find(x => x.d); if (pd) exclusivos[pd.id] = v; }
+    versionesJuego = ['Escarlata', 'Púrpura'];
+    return;
+  }
+  const todas = new Set();
+  for (const [pid, encs] of Object.entries(u.p)) {
+    let union = new Set(), todasLimitadas = true;
+    for (const e of encs) {
+      if (/Huevo|regalo|Intercambio/i.test(e[1])) continue;
+      if (!e[4] || !e[4].length) { todasLimitadas = false; break; }
+      e[4].forEach(v => union.add(v));
+    }
+    if (todasLimitadas && union.size === 1) { const v = [...union][0]; exclusivos[pid] = v; todas.add(v); }
+  }
+  versionesJuego = [...todas].sort();
+}
+function rellenarExclusivos() {
+  const f = $('filtroExcl'), previo = f.value;
+  f.innerHTML = '<option value="">Cualquier edición</option>' + versionesJuego.map(v => `<option value="${esc(v)}">Solo en ${esc(v)}</option>`).join('');
+  f.style.display = versionesJuego.length ? '' : 'none';
+  if (versionesJuego.includes(previo)) f.value = previo;
+}
+const exclusivoDe = p => exclusivos[p.id] || exclusivos[(POR_ESPECIE[p.s] || []).find(x => x.d)?.id];
+
+function filtrar() {
+  const sel = $('pokemon');
+  const previo = sel.value;
+  const q = $('buscar').value.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const j = juegoActual(), cap = capturados(j.id);
+  const fg = $('filtroGen').value, fe = $('filtroEstado').value, fx = $('filtroExcl').value;
+  sel.innerHTML = '';
+  let n = 0;
+  for (const e of listaActual) {
+    const texto = `${String(e.num).padStart(3, '0')} ${e.nombre}`;
+    const plano = texto.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    if (q && !plano.includes(q)) continue;
+    if (filtro.tipos.size && !tiposEnGen(e.p, j.gen).some(t => filtro.tipos.has(t))) continue;
+    if (fg && D.especies[e.p.s].g !== +fg) continue;
+    if (fe === 'si' && !cap.has(e.p.s)) continue;
+    if (fe === 'no' && cap.has(e.p.s)) continue;
+    if (fx && exclusivoDe(e.p) !== fx) continue;
+    const o = document.createElement('option');
+    o.value = e.p.id; o.textContent = (cap.has(e.p.s) ? '✔ ' : '') + '#' + texto + (exclusivoDe(e.p) ? `  · solo ${exclusivoDe(e.p)}` : '');
+    sel.appendChild(o); n++;
+  }
+  const esp = new Set(listaActual.map(e => e.p.s));
+  const hechos = [...esp].filter(s => cap.has(s)).length;
+  const filtrando = q || filtro.tipos.size || fg || fe || fx;
+  $('contador').innerHTML = `<span class="progreso" style="--p:${esp.size ? hechos / esp.size * 100 : 0}%"></span>${hechos}/${esp.size} capturados` +
+    (filtrando ? ` · ${n} en la lista` : '');
+  if ([...sel.options].some(o => o.value === previo)) sel.value = previo;
+  if (!n) { $('ficha').innerHTML = '<div class="ficha" style="display:block;padding:20px"><p class="vacio">Ningún Pokémon cumple los filtros.</p></div>'; $('infoExtra').innerHTML = ''; $('donde').innerHTML = ''; return; }
+  mostrar();
+}
+
+function rutaSprite(p, j) {
+  const base = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
+  const arte = base + 'other/official-artwork/' + p.id + '.png';
+  if (!$('spriteJuego').checked) return {src: arte, arte};
+  const rutas = {'1':'generation-i/red-blue','2':'generation-i/yellow','3':'generation-ii/gold','4':'generation-ii/crystal',
+    '5':'generation-iii/ruby-sapphire','6':'generation-iii/emerald','7':'generation-iii/firered-leafgreen',
+    '8':'generation-iv/diamond-pearl','9':'generation-iv/platinum','10':'generation-iv/heartgold-soulsilver',
+    '11':'generation-v/black-white','14':'generation-v/black-white','15':'generation-vi/x-y',
+    '16':'generation-vi/omegaruby-alphasapphire','17':'generation-vii/ultra-sun-ultra-moon','18':'generation-vii/ultra-sun-ultra-moon'};
+  const r = rutas[j.id];
+  return {src: r ? base + 'versions/' + r + '/' + p.id + '.png' : arte, arte, pixel: !!r};
+}
+
+function chip(tipo, mult) {
+  const m = mult === undefined ? '' : `<b>×${mult === .25 ? '¼' : mult === .5 ? '½' : mult}</b>`;
+  return `<span class="tipo" style="background:${COLOR[tipo]}">${NOMBRE[tipo]}${m}</span>`;
+}
+function grupo(titulo, sub, lista) {
+  return `<div class="bloque"><h3>${titulo} <small>${sub}</small></h3><div class="chips">${
+    lista.length ? lista.map(([t, m]) => chip(t, m)).join('') : '<span class="vacio">Ninguno</span>'}</div></div>`;
+}
+
+function fila(etiqueta, lista) {
+  return `<div class="chips" style="margin-bottom:6px;align-items:center"><span class="vacio" style="width:130px">${etiqueta}</span>${
+    lista.map(([d]) => chip(d)).join('') || '<span class="vacio">Ninguno</span>'}</div>`;
+}
+
+function mostrar() {
+  const j = juegoActual();
+  const id = +$('pokemon').value;
+  const e = listaActual.find(x => x.p.id === id);
+  if (!e) { $('ficha').innerHTML = '<div class="ficha"><p class="vacio">No hay Pokémon que coincidan.</p></div>'; return; }
+  const p = e.p, gen = j.gen;
+  const {tipos, t} = tablaGen(gen);
+  const propios = tiposEnGen(p, gen).filter(x => tipos.includes(x));
+  const mult = (a, d) => t[a] && t[a][d] !== undefined ? t[a][d] : 1;
+
+  // Defensa: lo que recibe
+  const def = tipos.map(a => [a, propios.reduce((m, d) => m * mult(a, d), 1)]);
+  const x4 = def.filter(x => x[1] === 4), x2 = def.filter(x => x[1] === 2);
+  const r2 = def.filter(x => x[1] === .5), r4 = def.filter(x => x[1] === .25), x0 = def.filter(x => x[1] === 0);
+
+  // Ataque con sus propios tipos (STAB)
+  const ofe = propios.map(a => ({a,
+    sup: tipos.filter(d => mult(a, d) === 2).map(d => [d]),
+    res: tipos.filter(d => mult(a, d) === .5).map(d => [d]),
+    inm: tipos.filter(d => mult(a, d) === 0).map(d => [d])}));
+  // Tipos que resisten (o anulan) todos sus ataques de tipo propio
+  const resistenTodo = tipos.filter(d => propios.every(a => mult(a, d) < 1)).map(d => [d]);
+
+  const sp = rutaSprite(p, j);
+  const forma = p.d && (POR_ESPECIE[p.s] || []).length > 1 && p.f ? `<div class="forma">${p.f}</div>` : '';
+  const cambio = p.p.length && propios.join() !== p.t.filter(x => tipos.includes(x)).join()
+    ? `<p class="nota">En este juego es de tipo ${propios.map(x => NOMBRE[x]).join('/')}; en juegos más recientes es ${p.t.map(x => NOMBRE[x]).join('/')}.</p>` : '';
+
+  $('ficha').innerHTML = `<div class="ficha" style="--c1:${COLOR[propios[0]] || '#9fa19f'};--c2:${COLOR[propios[1] || propios[0]] || '#9fa19f'}">
+    <div class="foto">
+      <img src="${sp.src}" alt="${e.nombre}" class="${sp.pixel ? 'pixel' : ''}"
+        onerror="if(this.src!=='${sp.arte}'){this.src='${sp.arte}';this.className='';}">
+      <h2>${e.nombre}</h2>
+      ${forma}
+      <div class="num">#${String(e.num).padStart(3, '0')} · Nacional #${p.s}</div>
+      <div class="chips" style="justify-content:center;margin-top:8px">${propios.map(x => chip(x)).join('')}</div>
+      ${exclusivoDe(p) ? `<span class="excl">Solo en ${esc(exclusivoDe(p))}</span>` : ''}
+      <button type="button" class="capturar ${capturados(j.id).has(p.s) ? 'on' : ''}" id="btnCapturar">${capturados(j.id).has(p.s) ? '✔ Capturado' : '+ Marcar como capturado'}</button>
+      ${cambio}
+    </div>
+    <div>
+      <div class="seccion">Al defender (ataques que recibe)</div>
+      ${grupo('Súper eficaces contra él', '(le hacen ×2 o ×4)', [...x4, ...x2])}
+      ${grupo('Poco eficaces contra él', '(los resiste: ×½ o ×¼)', [...r2, ...r4])}
+      ${grupo('No le afectan', '(inmune: ×0)', x0)}
+      <div class="seccion">Al atacar con sus tipos</div>
+      ${ofe.map(o => `<div class="bloque"><h3>Ataques de tipo ${chip(o.a)}</h3>` +
+        fila('Súper eficaz contra', o.sup) + fila('Lo resisten', o.res) +
+        (o.inm.length ? fila('No afecta a', o.inm) : '') + '</div>').join('')}
+      ${propios.length > 1 ? grupo('Resisten todos sus ataques de tipo propio', '', resistenTodo) : ''}
+      <p class="nota">Tabla de tipos de la ${gen}.ª generación. No tiene en cuenta habilidades (Levitación, Absorbe Agua…) ni objetos.</p>
+    </div>
+  </div>`;
+  $('btnCapturar').onclick = () => {
+    marcarCapturado(j.id, p.s, !capturados(j.id).has(p.s));
+    const b = $('btnCapturar'), si = capturados(j.id).has(p.s);
+    b.classList.toggle('on', si); b.textContent = si ? '✔ Capturado' : '+ Marcar como capturado';
+    const sel = $('pokemon'), o = sel.options[sel.selectedIndex];
+    if (o) o.textContent = (si ? '✔ ' : '') + o.textContent.replace(/^✔ /, '');
+    const esp = new Set(listaActual.map(x => x.p.s)), cap = capturados(j.id), hechos = [...esp].filter(s => cap.has(s)).length;
+    $('contador').innerHTML = `<span class="progreso" style="--p:${hechos / esp.size * 100}%"></span>${hechos}/${esp.size} capturados`;
+  };
+  mostrarExtra(p, j, e.nombre);
+  mostrarUbicaciones(p, j, e.nombre);
+}
+
+// ---------- Estadísticas, habilidades, evolución, movimientos y descripción ----------
+const X = window.EXTRA || {};
+const STAT_N = ['PS', 'Ataque', 'Defensa', 'At. Esp.', 'Def. Esp.', 'Velocidad'];
+// Estadísticas base en una generación: las actuales con los cambios antiguos aplicados.
+// En la 1.ª generación At. Esp. y Def. Esp. eran una sola («Especial»): se pone el mismo valor en las dos.
+function statsEn(pid, gen) {
+  const st = [...((X.stats || {})[pid] || [0, 0, 0, 0, 0, 0])];
+  const past = (window.STATS_PAST || {})[pid] || [];
+  for (const k of [0, 1, 2, 3, 4, 5, 'E']) {
+    const c = past.filter(([g, s]) => s === k && g >= gen).sort((a, b) => a[0] - b[0])[0];
+    if (!c) continue;
+    if (k === 'E') { if (gen === 1) st[3] = st[4] = c[2]; } else st[k] = c[2];
+  }
+  return st;
+}
+// Habilidades que cambian cómo afectan los tipos (id de PokeAPI -> [generación desde la que aplica, efecto])
+const HAB_TIPO = {26: [3, 'Inmune a Tierra'], 10: [3, 'Inmune a Eléctrico (recupera PS)'], 11: [3, 'Inmune a Agua (recupera PS)'],
+  18: [3, 'Inmune a Fuego (potencia su Fuego)'], 31: [5, 'Inmune a Eléctrico (sube At. Esp.)'], 114: [5, 'Inmune a Agua (sube At. Esp.)'],
+  78: [4, 'Inmune a Eléctrico (sube Velocidad)'], 157: [5, 'Inmune a Planta (sube Ataque)'], 87: [4, 'Inmune a Agua; Fuego le hace ×1,25'],
+  47: [3, 'Fuego y Hielo le hacen la mitad'], 85: [4, 'Fuego le hace la mitad'], 25: [3, 'Solo le dañan los ataques súper eficaces'],
+  297: [9, 'Inmune a Tierra (recupera PS)'], 273: [9, 'Inmune a Fuego (sube Defensa)'], 272: [9, 'Fantasma le hace la mitad'],
+  199: [7, 'Fuego le hace la mitad'], 218: [7, 'Fuego le hace el doble; contacto la mitad'], 111: [4, 'Los súper eficaces le hacen ×0,75'],
+  116: [4, 'Los súper eficaces le hacen ×0,75'], 232: [7, 'Los súper eficaces le hacen ×0,75'], 21: [9, 'Inmune a Fantasma y Normal no le afecta… (Tera)']};
+delete HAB_TIPO[21];
+
+function habilidadesEn(p, gen) {
+  const h = (X.hab || {})[p.id];
+  if (!h || gen < 3) return [];
+  const porHueco = {};
+  for (const x of h.a) porHueco[x[2]] = x;
+  if (h.p) {   // los cambios antiguos solo traen los huecos que cambiaron
+    const gs = Object.keys(h.p).map(Number).filter(g => g >= gen).sort((a, b) => a - b);
+    if (gs.length) for (const x of h.p[gs[0]]) porHueco[x[2]] = x;
+  }
+  return Object.values(porHueco).filter(([a, o]) => a && (!o || gen >= 5) && ((X.infoHab[a] || [])[2] || 3) <= gen);
+}
+function metodoEvo(sid, j) {
+  const e = (X.evo || {})[sid];
+  if (!e) return '';
+  const vale = e.m.filter(([o]) => o <= j.orden);
+  const m = vale.length ? vale[vale.length - 1] : e.m[0];
+  return m ? m[1].join(' · o bien · ') : '';
+}
+function sprite(pid) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pid}.png`; }
+
+const cargandoMovs = {};
+function cargarMovs(jid) {
+  if (window.MOVSJ && MOVSJ[jid]) return Promise.resolve(MOVSJ[jid]);
+  if (!cargandoMovs[jid]) cargandoMovs[jid] = new Promise(res => {
+    const s = document.createElement('script'); s.src = 'movs/' + jid + '.js';
+    s.onload = () => res((window.MOVSJ || {})[jid] || null); s.onerror = () => res(null);
+    document.head.appendChild(s);
+  });
+  return cargandoMovs[jid];
+}
+let pestMov = 'n';
+
+async function mostrarExtra(p, j, nombre) {
+  const caja = $('infoExtra'), ficha = p.id + '|' + j.id;
+  caja.dataset.ficha = ficha;
+  const gen = j.gen;
+  // Estadísticas
+  const st = statsEn(p.id, gen);
+  const filasSt = gen === 1 ? [[0, 'PS'], [1, 'Ataque'], [2, 'Defensa'], [3, 'Especial'], [5, 'Velocidad']] : STAT_N.map((n, i) => [i, n]);
+  const total = filasSt.reduce((a, [i]) => a + st[i], 0);
+  const barras = filasSt.map(([i, nombreSt]) => {
+    const v = st[i];
+    const c = v >= 120 ? '#22c55e' : v >= 90 ? '#84cc16' : v >= 60 ? '#eab308' : v >= 40 ? '#f97316' : '#ef4444';
+    return `<div class="stat"><span>${nombreSt}</span><b>${v}</b><div class="barra"><i style="width:${Math.min(100, v / 2.0)}%;background:${c}"></i></div></div>`;
+  }).join('');
+  // Habilidades
+  const habs = habilidadesEn(p, gen);
+  const habHtml = gen < 3 ? '<p class="vacio">Las habilidades no existen en la generación ' + gen + '.</p>' :
+    habs.map(([a, o]) => { const [n, d] = X.infoHab[a] || ['?', '']; const t = HAB_TIPO[a];
+      return `<div class="hab"><b>${esc(n)}</b>${o ? '<span class="etq">Oculta</span>' : ''}${t && gen >= t[0] ? `<span class="etq aviso">${esc(t[1])}</span>` : ''}<p>${esc(d)}</p></div>`; }).join('') || '<p class="vacio">Sin datos.</p>';
+  // Cadena evolutiva
+  const cid = (X.cad || {})[p.s], miem = ((X.miem || {})[cid] || []).filter(s => D.especies[s] && D.especies[s].g <= gen);
+  let evoHtml = '<p class="vacio">No evoluciona.</p>';
+  if (miem.length > 1) {
+    const etapa = s => { let n = 0, x = s; while ((X.evo[x] || {}).de && miem.includes(X.evo[x].de)) { n++; x = X.evo[x].de; } return n; };
+    const cols = [];
+    miem.forEach(s => (cols[etapa(s)] ||= []).push(s));
+    evoHtml = `<div class="evo">${cols.map((col, k) => (k ? '<div class="flecha">➜</div>' : '') + `<div class="evo-col">${col.map(s => {
+      const pd = (POR_ESPECIE[s] || []).find(x => x.d);
+      const met = k ? metodoEvo(s, j) : '';
+      return `<button class="evo-p ${s === p.s ? 'actual' : ''}" data-s="${s}">${pd ? `<img src="${sprite(pd.id)}" alt="" loading="lazy">` : ''}
+        <b>${esc(D.especies[s].n)}</b>${met ? `<small>${esc(met)}</small>` : ''}</button>`; }).join('')}</div>`).join('')}</div>`;
+  }
+  // Descripción
+  const mj = await cargarMovs(j.id);
+  if (caja.dataset.ficha !== ficha) return;
+  const desc = (mj && mj.d && mj.d[p.s]) || (window.DESC_ULT || {})[p.s] || '';
+  const mp = mj && mj.p && (mj.p[p.id] || mj.p[(POR_ESPECIE[p.s] || []).find(x => x.d)?.id]);
+  const filaMov = (mid, pre) => { const m = (window.MOVS || {})[mid]; if (!m) return '';
+    return `<tr><td class="pre">${pre}</td><td><b>${esc(m[0])}</b></td><td>${m[1] ? chip(m[1]) : ''}</td><td class="cl ${m[2]}">${m[2]}</td><td>${m[3] ?? '—'}</td><td>${m[4] ?? '—'}</td><td>${m[5] ?? '—'}</td></tr>`; };
+  const tablas = !mp ? '<p class="vacio">No hay datos de movimientos para este juego.</p>' : (() => {
+    const pest = [['n', 'Por nivel', mp.n], ['m', 'Por MT/MO', mp.m], ['h', 'Huevo', mp.h], ['t', 'Tutor', mp.t]].filter(x => x[2] && x[2].length);
+    if (!pest.some(x => x[0] === pestMov)) pestMov = pest[0] ? pest[0][0] : 'n';
+    const act = pest.find(x => x[0] === pestMov);
+    const filas = !act ? '' : act[0] === 'n' ? act[2].map(([nv, mid]) => filaMov(mid, nv ? 'Nv. ' + nv : 'Inicio')).join('')
+      : act[0] === 'm' ? act[2].map(([t, mid]) => filaMov(mid, t)).join('') : act[2].map(mid => filaMov(mid, '')).join('');
+    return `<div class="pestanas mini-p">${pest.map(([k, n, l]) => `<button data-pm="${k}" class="${k === pestMov ? 'activa' : ''}">${n} <span>(${l.length})</span></button>`).join('')}</div>
+      <div class="tabla-mov"><table><thead><tr><th></th><th>Movimiento</th><th>Tipo</th><th>Clase</th><th>Pot.</th><th>Prec.</th><th>PP</th></tr></thead><tbody>${filas}</tbody></table></div>`;
+  })();
+
+  caja.innerHTML = `<div class="extra">
+    ${desc ? `<div class="desc-pkdx">“${esc(desc)}”</div>` : ''}
+    <div class="extra-grid">
+      <div class="bloque"><h3>Estadísticas base <small class="vacio">Total ${total}</small></h3>${barras}</div>
+      <div class="bloque"><h3>Habilidades</h3>${habHtml}</div>
+    </div>
+    <div class="bloque"><h3>Evolución</h3>${evoHtml}</div>
+    <div class="bloque"><h3>Movimientos en ${esc(j.nombre)}</h3>${tablas}</div>
+  </div>`;
+  caja.querySelectorAll('.evo-p').forEach(b => b.onclick = () => {
+    const pd = (POR_ESPECIE[+b.dataset.s] || []).find(x => x.d);
+    if (!pd) return;
+    const sel = $('pokemon');
+    if (![...sel.options].some(o => +o.value === pd.id)) { $('buscar').value = ''; filtrar(); }
+    if ([...sel.options].some(o => +o.value === pd.id)) { sel.value = pd.id; mostrar(); $('ficha').scrollIntoView({behavior: 'smooth'}); }
+  });
+  caja.querySelectorAll('[data-pm]').forEach(b => b.onclick = () => { pestMov = b.dataset.pm; mostrarExtra(p, j, nombre); });
+}
+
+// ---------- Dónde encontrarlo ----------
+const cargando = {};
+function cargarUbic(jid) {
+  if (window.UBIC && UBIC[jid]) return Promise.resolve(UBIC[jid]);
+  if (!cargando[jid]) cargando[jid] = new Promise(res => {
+    const s = document.createElement('script');
+    s.src = 'ubic/' + jid + '.js';
+    s.onload = () => res((window.UBIC || {})[jid] || null);
+    s.onerror = () => res(null);
+    document.head.appendChild(s);
+  });
+  return cargando[jid];
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const nombreLugar = id => (window.NOMBRES_LUGAR || {})[id] || id;
+let mapaElegido = {};
+
+// Prepara un mapa una sola vez: reparte los lugares de cada zona y calcula el recuadro que ocupa todo
+function preparar(m) {
+  if (m._listo) return m;
+  if (m.fondo) {             // mapa real: coordenadas en píxeles de la imagen
+    m._nodos = Object.assign({}, m.nodos || {});
+    m._zonas = (m.zonas || []).map(([id, x, y, rx, ry, hijos]) => {
+      (hijos || []).forEach((hh, i, l) => {
+        if (m._nodos[hh]) return;
+        const r = Math.sqrt((i + .5) / l.length) * .78, a = i * 2.39996;
+        m._nodos[hh] = [x + Math.cos(a) * rx * r, y + Math.sin(a) * ry * r, 'l'];
+      });
+      return {id, x, y, rx, ry, hijos: hijos || []};
+    });
+    m._areas = (m.areas || []).map(a => {
+      const c = a.c; let cx, cy;
+      if (a.f === 'circle') { cx = c[0]; cy = c[1]; }
+      else { const xs = c.filter((_, i) => i % 2 === 0), ys = c.filter((_, i) => i % 2 === 1);
+             cx = (Math.min(...xs) + Math.max(...xs)) / 2; cy = (Math.min(...ys) + Math.max(...ys)) / 2; }
+      return {...a, cx, cy};
+    });
+    m._caja = m.fondo.recorte || [0, 0, m.fondo.w, m.fondo.h];
+    if (m.fondo.recorte) {
+      const [cx0, cy0, cw, ch] = m._caja;
+      m._areas = m._areas.filter(a => a.cx >= cx0 && a.cx <= cx0 + cw && a.cy >= cy0 && a.cy <= cy0 + ch);
+    }
+    m._listo = true;
+    return m;
+  }
+  m._nodos = {};
+  for (const [id, v] of Object.entries(m.nodos || {})) m._nodos[id] = v;
+  m._zonas = (m.zonas || []).map(([id, x, y, rx, ry, hijos]) => {
+    (hijos || []).forEach((h, i, l) => {          // reparto en girasol dentro de la elipse
+      if (m._nodos[h]) return;
+      const r = Math.sqrt((i + .5) / l.length) * .78, a = i * 2.39996;
+      m._nodos[h] = [x + Math.cos(a) * rx * r, y + Math.sin(a) * ry * r, 'l'];
+    });
+    return {id, x, y, rx, ry, hijos: hijos || []};
+  });
+  const xs = [], ys = [];
+  for (const [x, y] of Object.values(m._nodos)) { xs.push(x); ys.push(y); }
+  for (const [, pts] of m.rutas || []) for (const p of pts) if (typeof p !== 'string') { xs.push(p[0]); ys.push(p[1]); }
+  for (const z of m._zonas) { xs.push(z.x - z.rx, z.x + z.rx); ys.push(z.y - z.ry, z.y + z.ry); }
+  for (const [, x, y, w, h] of m.islas || []) { xs.push(x, x + w); ys.push(y, y + h); }
+  const pad = 5;
+  m._caja = [Math.min(...xs) - pad, Math.min(...ys) - pad, Math.max(...xs) - Math.min(...xs) + pad * 2, Math.max(...ys) - Math.min(...ys) + pad * 2];
+  m._listo = true;
+  return m;
+}
+function punto(m, pt) { const q = typeof pt === 'string' ? m._nodos[pt] : pt; return q && q.slice(0, 2); }
+function enMapa(m, ident) {
+  preparar(m);
+  if (m.puntos) return false;
+  return !!(m._nodos[ident] || (m.rutas || []).some(r => r[0] === ident) || m._zonas.some(z => z.id === ident) ||
+    (m._areas || []).some(a => a.ids.includes(ident)));
+}
+// Puntos exactos de aparición (Paldea, Noroteo, Terario, Luminalia)
+const cargandoPuntos = {};
+function cargarPuntos(r) {
+  if (window.PUNTOS && PUNTOS[r]) return Promise.resolve(PUNTOS[r]);
+  if (!cargandoPuntos[r]) cargandoPuntos[r] = new Promise(res => {
+    const s = document.createElement('script');
+    s.src = 'mapas_puntos/' + r + '.js';
+    s.onload = () => res((window.PUNTOS || {})[r] || {});
+    s.onerror = () => res({});
+    document.head.appendChild(s);
+  });
+  return cargandoPuntos[r];
+}
+const puntosDe = (m, pid) => m.puntos ? ((window.PUNTOS || {})[m.puntos] || {})[pid] || [] : [];
+function nombreZona(z) {
+  const n = nombreLugar(z.id);
+  if (n !== z.id) return n;
+  const h = z.hijos.map(nombreLugar).find(x => x.includes(':'));
+  return h ? h.split(':')[0] : z.id.replace(/^\w+:/, '').replace(/-/g, ' ');
+}
+
+function svgMapa(m, marcados, pid) {
+  preparar(m);
+  const [bx, by, bw, bh] = m._caja;
+  const fs = m.fondo ? Math.sqrt(bw * bh) / 38 : Math.max(bw, bh * 1.2) / 52;   // tamaño de letra proporcional al mapa
+  const r0 = fs * .45;
+  let s = `<svg class="mapa ${m.fondo ? 'real' : ''}" viewBox="${bx} ${by} ${bw} ${bh}" role="img" aria-label="Mapa de ${esc(m.nombre)}" font-size="${fs}">`;
+  if (m.fondo) s += `<image href="${m.fondo.img}" x="0" y="0" width="${m.fondo.w}" height="${m.fondo.h}" ${m.fondo.pixel ? 'style="image-rendering:pixelated"' : ''}/>`;
+  else if (m.islas) for (const [n, x, y, w, h] of m.islas)
+    s += `<rect class="tierra" x="${x}" y="${y}" width="${w}" height="${h}" rx="${fs * 2}"/>` +
+      (n ? `<text class="isla" x="${x + fs * .6}" y="${y + h - fs * .6}">${esc(n)}</text>` : '');
+  else s += `<rect class="tierra" x="${bx + 1.5}" y="${by + 1.5}" width="${bw - 3}" height="${bh - 3}" rx="${fs * 2}"/>`;
+  const extra = [];   // etiquetas de zonas reales marcadas
+  for (const a of m._areas || []) {
+    const id = a.ids.find(i => marcados.has(i)) || a.ids[0] || '';
+    const si = a.ids.some(i => marcados.has(i));
+    const cls = `area ${si ? 'si' : ''}`, t = `<title>${esc(id ? nombreLugar(id) : a.t)}</title>`;
+    const d = `data-id="${id}" class="${cls}"`;
+    if (a.f === 'circle') s += `<circle ${d} cx="${a.c[0]}" cy="${a.c[1]}" r="${a.c[2]}">${t}</circle>`;
+    else if (a.f === 'poly') s += `<polygon ${d} points="${a.c.join(',')}">${t}</polygon>`;
+    else { const [x1, y1, x2, y2] = a.c;
+      s += `<rect ${d} x="${Math.min(x1, x2)}" y="${Math.min(y1, y2)}" width="${Math.max(1, Math.abs(x2 - x1))}" height="${Math.max(1, Math.abs(y2 - y1))}">${t}</rect>`; }
+    if (si) extra.push([a.cx, a.cy, id ? nombreLugar(id) : a.t]);
+  }
+  for (const [x, y, v] of puntosDe(m, pid))
+    s += `<circle class="punto v${v}" cx="${x}" cy="${y}" r="${fs * .32}"/>`;
+
+  // Etiquetas sin solaparse: se prueba a la derecha, izquierda, arriba y abajo
+  const cajas = [], etiquetas = [];
+  const choca = c => cajas.some(o => c[0] < o[2] && c[2] > o[0] && c[1] < o[3] && c[3] > o[1]) ||
+    c[0] < bx || c[2] > bx + bw || c[1] < by || c[3] > by + bh;
+  function etiqueta(x, y, texto, clase, separacion, obligatoria) {
+    const f = clase === 'rojo' ? fs * 1.12 : fs, w = texto.length * f * .56, h = f * 1.1, d = separacion + f * .3;
+    const opciones = [[x + d, y + h * .35, 'start'], [x - d, y + h * .35, 'end'], [x, y - d, 'middle'], [x, y + d + h * .7, 'middle']];
+    for (const [tx, ty, anc] of opciones) {
+      const x0 = anc === 'start' ? tx : anc === 'end' ? tx - w : tx - w / 2;
+      const c = [x0, ty - h * .8, x0 + w, ty + h * .2];
+      if (!choca(c)) { cajas.push(c); etiquetas.push(`<text class="${clase}" x="${tx}" y="${ty}" text-anchor="${anc}">${esc(texto)}</text>`); return; }
+    }
+    if (obligatoria) {
+      const [tx, ty, anc] = opciones[x > bx + bw / 2 ? 1 : 0];
+      etiquetas.push(`<text class="${clase}" x="${tx}" y="${ty}" text-anchor="${anc}">${esc(texto)}</text>`);
+    }
+  }
+
+  // Con muchos lugares marcados solo se escriben los nombres que quepan (el resto se ve al pasar el ratón)
+  const nMarcados = [...marcados].filter(i => m._nodos[i] || (m.rutas || []).some(r => r[0] === i) ||
+    (m._areas || []).some(a => a.ids.includes(i))).length;
+  const forzar = nMarcados <= 12;
+  for (const z of m._zonas) {
+    const si = marcados.has(z.id) || z.hijos.some(h => marcados.has(h));
+    s += `<ellipse data-id="${z.id}" class="zona ${si ? 'si' : ''} ${m.fondo && !si ? 'oculto' : ''}" cx="${z.x}" cy="${z.y}" rx="${z.rx}" ry="${z.ry}"><title>${esc(nombreZona(z))}</title></ellipse>`;
+  }
+  const pendientes = [];   // [prioridad, x, y, texto, clase, separación, obligatoria]
+  for (const [id, pts, tipo] of m.rutas || []) {
+    const c = pts.map(p => punto(m, p)).filter(Boolean);
+    if (c.length < 2) continue;
+    const si = marcados.has(id), pl = c.map(p => p.join(',')).join(' ');
+    s += `<polyline data-id="${id}" class="ruta ${tipo || ''} ${si ? 'si' : ''}" points="${pl}" style="stroke-width:${si ? fs * 1.15 : fs * .6}"><title>${esc(nombreLugar(id))}</title></polyline>`;
+    s += `<polyline data-id="${id}" points="${pl}" fill="none" stroke="transparent" stroke-width="${fs * 2}"><title>${esc(nombreLugar(id))}</title></polyline>`;
+    if (si && !m._nodos[id]) {
+      const k = Math.floor((c.length - 1) / 2), a = c[k], b = c[k + 1];
+      pendientes.push([0, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, nombreLugar(id), 'rojo', fs * .6, forzar]);
+    }
+  }
+  for (const [x, y, t] of extra) pendientes.push([0, x, y, t, 'rojo', fs * .4, forzar]);
+  for (const [id, [x, y, t]] of Object.entries(m._nodos)) {
+    const si = marcados.has(id);
+    if (m.fondo && !si) {   // en los mapas reales solo se dibujan los lugares marcados (el resto, invisible al pasar el ratón)
+      s += `<circle data-id="${id}" class="oculto" cx="${x}" cy="${y}" r="${r0 * 1.4}"><title>${esc(nombreLugar(id))}</title></circle>`;
+      continue;
+    }
+    if (t === 'c') s += `<rect data-id="${id}" class="ciudad ${si ? 'si' : ''}" x="${x - r0 * 1.5}" y="${y - r0 * 1.5}" width="${r0 * 3}" height="${r0 * 3}" rx="${r0 * .5}"><title>${esc(nombreLugar(id))}</title></rect>`;
+    else s += `<circle data-id="${id}" class="lugar ${si ? 'si' : ''}" cx="${x}" cy="${y}" r="${si ? r0 * 1.5 : r0}"><title>${esc(nombreLugar(id))}</title></circle>`;
+    if (si) { s += `<circle class="anillo" cx="${x}" cy="${y}" r="${r0 * 1.8}"/>`; pendientes.push([forzar ? 0 : 3, x, y, nombreLugar(id), 'rojo', r0 * 1.6, forzar]); }
+    else if (t === 'c') pendientes.push([1, x, y, nombreLugar(id), '', r0 * 1.6, false]);
+  }
+  for (const z of m._zonas) {
+    const si = marcados.has(z.id), conHijos = z.hijos.some(h => marcados.has(h));
+    if (m.fondo && !si && !conHijos) continue;
+    pendientes.push([si || conHijos ? 0 : 2, z.x, z.y - z.ry * .55, nombreZona(z), si ? 'rojo' : 'zona-n', 0, si || conHijos]);
+  }
+  pendientes.sort((a, b) => a[0] - b[0]);
+  for (const [, x, y, t, c, d, o] of pendientes) etiqueta(x, y, t, c, d, o);
+  return s + etiquetas.join('') + '</svg>';
+}
+
+// ---------- Mapa y foto real de cada lugar (WikiDex) ----------
+const CODIGOS_JUEGO = {'1':['RAA','RAAm','RA','Am'], '2':['RAA','RAAm','Am','RA'], '3':['OPC','OP','OyP'], '4':['OPC','C','Cristal'],
+  '5':['RZE','RZ','RyZ'], '6':['RZE','E'], '7':['RfVh','RFVH'], '8':['DPPt','DP'], '9':['DPPt','Pt'], '10':['HGSS','OHPS'],
+  '11':['NB','N/B'], '14':['N2B2','NB2','NB'], '15':['XY'], '16':['ROZA'], '17':['SL','USUL'], '18':['USUL','SL'],
+  '19':['LGPE'], '20':['EpEc','EE'], '23':['DBPR','DPPt'], '24':['LPA'], '25':['EP','EP EDC'], '30':['LPZA','LZA']};
+function fotoLugarJuego(lf, jid) {
+  const im = lf.img || {}, ks = Object.keys(im);
+  const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  for (const c of CODIGOS_JUEGO[jid] || []) { const k = ks.find(x => norm(x) === norm(c)); if (k) return im[k]; }
+  return im.general || im[ks[ks.length - 1]] || '';
+}
+function abrirLugar(ident, nombre, j) {
+  const lf = (window.LUGAR_FOTOS || {})[ident];
+  if (!lf) return;
+  let d = $('dlgLugar');
+  if (!d) {
+    d = document.createElement('dialog'); d.id = 'dlgLugar';
+    document.body.appendChild(d);
+    d.addEventListener('click', e => { if (e.target === d) d.close(); });
+  }
+  const captura = fotoLugarJuego(lf, j.id);
+  const otras = Object.entries(lf.img || {}).filter(([, u]) => u !== captura);
+  const fig = (src, pie) => `<figure><img src="${src}" alt="${esc(nombre + ' — ' + pie)}" referrerpolicy="no-referrer"
+    onload="if(this.naturalWidth<420)this.style.imageRendering='pixelated'" onerror="this.closest('figure').remove()"><figcaption>${esc(pie)}</figcaption></figure>`;
+  d.innerHTML = `<div class="dlg-cab"><h3>${esc(nombre)}</h3><button class="cerrar" aria-label="Cerrar">✕</button></div>
+    <div class="dlg-fotos">${lf.mapa ? fig(lf.mapa, 'Situación en el mapa') : ''}${captura ? fig(captura, 'Cómo se ve en el juego') : ''}</div>
+    ${otras.length ? `<details><summary>Capturas en otros juegos (${otras.length})</summary><div class="dlg-fotos">${
+      otras.map(([k, u]) => fig(u, k === 'general' ? 'Imagen' : k)).join('')}</div></details>` : ''}
+    <p class="nota">Imágenes de WikiDex: <a href="https://www.wikidex.net/wiki/${encodeURIComponent(lf.pag.replace(/ /g, '_'))}" target="_blank" rel="noopener">${esc(lf.pag)}</a>. Uso personal.</p>`;
+  d.querySelector('.cerrar').onclick = () => d.close();
+  d.showModal();
+}
+
+async function mostrarUbicaciones(p, j, nombre) {
+  const caja = $('donde');
+  const ficha = p.id + '|' + j.id;
+  caja.dataset.ficha = ficha;
+  caja.innerHTML = `<div class="donde"><h2>Dónde encontrar a ${esc(nombre)}</h2><p class="vacio">Cargando ubicaciones…</p></div>`;
+  const u = await cargarUbic(j.id);
+  if (caja.dataset.ficha !== ficha) return;
+  // Solo mapas reales (con imagen de fondo); los esquemas ya no se muestran
+  const mapas = (window.MAPAS_JUEGO[j.id] || []).map(k => [k, window.MAPAS[k]]).filter(([, m]) => m && m.fondo);
+  if (!u) {
+    caja.innerHTML = `<div class="donde"><h2>Dónde encontrar a ${esc(nombre)}</h2><p class="vacio">${esc(j.nombre)} es un juego de combates: no tiene Pokémon salvajes ni mapa. Los Pokémon se eligen directamente para el equipo.</p></div>`;
+    return;
+  }
+  const encs = u.p[p.id] || [];
+  if (!encs.length) {
+    caja.innerHTML = `<div class="donde"><h2>Dónde encontrar a ${esc(nombre)}</h2><p class="vacio">No aparece en estado salvaje en ${esc(j.nombre)}. Se consigue evolucionando a su preevolución, por intercambio, criando o en eventos.</p></div>`;
+    return;
+  }
+  // Agrupar por lugar
+  const porLugar = new Map();
+  for (const [lid, met, mn, mx, vs, cs, prob] of encs) {
+    const [n, ident] = u.locs[lid];
+    if (!porLugar.has(ident)) {
+      const general = nombreLugar(ident);
+      porLugar.set(ident, {n: general !== ident ? general : n, ident, enc: []});
+    }
+    // Varias zonas internas del mismo lugar con el mismo método se juntan en una sola fila
+    const l = porLugar.get(ident), prev = l.enc.find(e => e.met === met);
+    if (prev) {
+      prev.mn = Math.min(prev.mn, mn); prev.mx = Math.max(prev.mx, mx); prev.prob = Math.max(prev.prob, prob);
+      prev.vs = prev.vs.length && vs.length ? [...new Set([...prev.vs, ...vs])] : [];
+      prev.cs = [...new Set([...prev.cs, ...cs])];
+    } else l.enc.push({met, mn, mx, vs: [...vs], cs: [...cs], prob});
+  }
+  const marcados = new Set(porLugar.keys());
+  // Elegir el mapa con más coincidencias
+  await Promise.all(mapas.filter(([, m]) => m.puntos).map(([, m]) => cargarPuntos(m.puntos)));
+  if (caja.dataset.ficha !== ficha) return;
+  let actual = mapaElegido[j.id + '|' + p.id];
+  if (actual && !mapas.some(([k]) => k === actual)) actual = null;
+  const cuenta = k => MAPAS[k].puntos ? puntosDe(MAPAS[k], p.id).length : [...marcados].filter(i => enMapa(MAPAS[k], i)).length;
+  // Se prefiere el mapa real si muestra algo; si no, el que más lugares marque
+  const puntuacion = k => (cuenta(k) > 0 ? 1e6 : 0) + (MAPAS[k].fondo ? 1e5 : 0) + cuenta(k);
+  if (!actual && mapas.length) actual = mapas.map(([k]) => k).sort((a, b) => puntuacion(b) - puntuacion(a))[0];
+  const mapaActual = actual ? MAPAS[actual] : null;
+
+  const tarjetas = [...porLugar.values()].map(l => {
+    const sin = mapas.length && !mapas.some(([k]) => enMapa(MAPAS[k], l.ident));
+    const lf = (window.LUGAR_FOTOS || {})[l.ident];
+    const mini = lf && (lf.mapa || lf.img) ? `<img class="mini" src="${lf.mapa || fotoLugarJuego(lf, j.id)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : '';
+    const padre = window.zonaPadre && zonaPadre(j.id, l.ident);
+    return `<div class="lugarc ${lf ? 'con-foto' : ''}" data-id="${l.ident}">${mini}<h4>${esc(l.n)}${sin ? '<span class="sinmapa">(fuera del mapa)</span>' : ''}${
+      padre && !sin ? `<span class="sinmapa">(en el mapa: ${esc(nombreLugar(padre))})</span>` : ''}${
+      lf ? '<span class="ver-lugar">Ver mapa y foto</span>' : ''}</h4>${
+      l.enc.map(e => `<div class="enc"><b>${esc(e.met)}</b> · Nv. ${e.mn === e.mx ? e.mn : e.mn + '–' + e.mx}${
+        e.prob ? ` · ${e.prob}%` : ''}${e.vs.map(v => `<span class="etq ver">${esc(v)}</span>`).join('')}${
+        e.cs.slice(0, 6).map(c => `<span class="etq">${esc(c)}</span>`).join('')}${e.cs.length > 6 ? `<span class="etq">+${e.cs.length - 6}</span>` : ''}</div>`).join('')}</div>`;
+  }).join('');
+
+  const pest = mapas.length > 1 ? `<div class="pestanas">${mapas.map(([k, m]) =>
+    `<button data-mapa="${k}" class="${k === actual ? 'activa' : ''}">${m.nombre.replace(/\s*\(mapa real\)/i, '')} <span>(${cuenta(k)}${m.puntos ? ' puntos' : ''})</span></button>`).join('')}</div>` : '';
+  const nota = !mapaActual ? '' : mapaActual.puntos
+    ? `Mapa real (Pokéarth, serebii.net). Cada punto rojo es un sitio donde aparece${mapaActual.puntos === 'paldea' ? '; rojo oscuro = solo Escarlata, morado = solo Púrpura' : ''}.`
+    : mapaActual.areas ? 'Mapa real (Pokéarth, serebii.net). En rojo, las zonas donde aparece. Pasa el ratón por un lugar de la lista para resaltarlo.'
+    : 'Mapa real (Pokéarth, serebii.net). Las posiciones de los lugares están colocadas a mano y son aproximadas.';
+  const sinPuntos = mapaActual && mapaActual.puntos && !cuenta(actual)
+    ? '<p class="vacio">Serebii no marca puntos de este Pokémon en este mapa (puede aparecer solo en incursiones, apariciones masivas o como encuentro fijo).</p>' : '';
+  const mapaHtml = mapaActual ? pest + sinPuntos + '<div class="mapa-caja">' + svgMapa(mapaActual, marcados, p.id) + '</div>' +
+    `<p class="nota">${nota}</p>`
+    : '<p class="vacio">Todavía no hay mapa dibujado para esta región; mira la lista de lugares.</p>';
+
+  caja.innerHTML = `<div class="donde"><h2>Dónde encontrar a ${esc(nombre)} <small class="vacio">(${porLugar.size} lugares)</small></h2>
+    <div class="donde-grid"><div>${mapaHtml}</div><div class="lugares">${tarjetas}</div></div></div>`;
+
+  caja.querySelectorAll('.pestanas button').forEach(b => b.onclick = () => {
+    mapaElegido[j.id + '|' + p.id] = b.dataset.mapa; mostrarUbicaciones(p, j, nombre);
+  });
+  const resaltar = (id, on) => {
+    caja.querySelectorAll(`svg [data-id="${id}"].ruta, svg [data-id="${id}"].ciudad, svg [data-id="${id}"].lugar, svg [data-id="${id}"].zona, svg [data-id="${id}"].area, svg [data-id="${id}"].oculto`).forEach(el => el.classList.toggle('foco', on));
+    caja.querySelectorAll(`.lugarc[data-id="${id}"]`).forEach(el => el.classList.toggle('foco', on));
+  };
+  caja.querySelectorAll('.lugarc').forEach(el => {
+    el.onmouseenter = () => resaltar(el.dataset.id, true);
+    el.onmouseleave = () => resaltar(el.dataset.id, false);
+    if (el.classList.contains('con-foto')) el.onclick = () => abrirLugar(el.dataset.id, porLugar.get(el.dataset.id).n, j);
+  });
+  caja.querySelectorAll('svg [data-id]').forEach(el => {
+    el.onmouseenter = () => resaltar(el.dataset.id, true);
+    el.onmouseleave = () => resaltar(el.dataset.id, false);
+    el.onclick = () => { const t = caja.querySelector(`.lugarc[data-id="${el.dataset.id}"]`); if (t) t.scrollIntoView({block: 'nearest', behavior: 'smooth'}); };
+  });
+}
+
+rellenarJuegos();
+$('juego').value = '25';   // juego inicial con todos los datos
+$('juego').addEventListener('change', () => { $('buscar').value = ''; construirLista(); });
+$('nacional').addEventListener('change', construirLista);
+$('spriteJuego').addEventListener('change', mostrar);
+$('buscar').addEventListener('input', filtrar);
+['filtroGen', 'filtroEstado', 'filtroExcl'].forEach(id => $(id).addEventListener('change', filtrar));
+$('limpiarFiltros').addEventListener('click', () => {
+  filtro.tipos.clear(); $('filtroGen').value = ''; $('filtroEstado').value = ''; $('filtroExcl').value = ''; $('buscar').value = '';
+  prepararFiltros(juegoActual()); filtrar();
+});
+$('pokemon').addEventListener('change', mostrar);
+construirLista();
+
+// ---------- Gimnasios ----------
+const G = window.GIMNASIOS || {};
+const NOTA_ES = n => n.replace(/^\((.*)\)$/, '$1')
+  .replace(/^(\w+) as starter$/, 'Si elegiste a $1 como inicial')
+  .replace(/^Pok[eé]mon Black$/, 'Solo en Pokémon Negro').replace(/^Pok[eé]mon White$/, 'Solo en Pokémon Blanco')
+  .replace(/^Pok[eé]mon Sword$/, 'Solo en Pokémon Espada').replace(/^Pok[eé]mon Shield$/, 'Solo en Pokémon Escudo')
+  .replace(/^Mixed types$/, 'Tipos variados');
+const slugSimple = t => t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '');
+const fotoShowdown = l => 'https://play.pokemonshowdown.com/sprites/trainers/' + slugSimple(l.en) + '.png';
+let gimSel = 0, liderSel = 0;
+
+function rellenarJuegosGim() {
+  const sel = $('juegoGim');
+  [...D.juegos].sort((a, b) => b.orden - a.orden).forEach(j => {
+    const o = document.createElement('option');
+    o.value = j.id;
+    o.textContent = `${j.nombre} — Gen ${j.gen}` + (G[j.id] ? '' : ' (sin gimnasios)');
+    sel.appendChild(o);
+  });
+}
+
+// Ilustración del gimnasio (hecha por la app, con el color y el tipo del gimnasio)
+function ilustracionGim(g, l, j) {
+  const c = COLOR[l.tipo] || '#888', tn = NOMBRE[l.tipo] || '';
+  const kahuna = g.tipo === 'kahuna';
+  const liga = g.tipo === 'elite4' || g.tipo === 'champion';
+  const titulo = kahuna ? `Gran Prueba · ${g.lugar}` : liga ? `Liga Pokémon · ${g.tipo === 'champion' ? 'Campeón' : 'Alto Mando ' + g.num}` : `Gimnasio de ${g.lugar}`;
+  return `<svg viewBox="0 0 400 240" role="img" aria-label="${esc(titulo)}">
+    <defs><linearGradient id="cielo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c}" stop-opacity=".95"/><stop offset="1" stop-color="${c}" stop-opacity=".35"/></linearGradient>
+      <linearGradient id="muro" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f1ea"/><stop offset="1" stop-color="#d9d3c6"/></linearGradient></defs>
+    <rect width="400" height="240" fill="url(#cielo)"/>
+    <circle cx="335" cy="48" r="26" fill="#fff" opacity=".35"/>
+    <path d="M0 196 Q100 176 200 190 T400 186 V240 H0Z" fill="#000" opacity=".12"/>
+    <rect x="0" y="200" width="400" height="40" fill="#6b8f4e"/>
+    <rect x="0" y="200" width="400" height="6" fill="#577a3d"/>
+    ${kahuna ? `
+      <path d="M110 200 L200 92 L290 200Z" fill="#8a6a45"/><path d="M135 200 L200 122 L265 200Z" fill="#a9845a"/>
+      <rect x="182" y="160" width="36" height="40" rx="18" fill="#3b2a1a"/>` : `
+      <rect x="92" y="104" width="216" height="96" fill="url(#muro)" stroke="#00000022"/>
+      <path d="M78 108 L200 58 L322 108Z" fill="${c}" stroke="#00000033" stroke-width="2"/>
+      <rect x="78" y="104" width="244" height="10" fill="${c}" filter="brightness(.8)"/>
+      <rect x="112" y="128" width="40" height="30" rx="3" fill="#bcd6ea" stroke="#0003"/><rect x="248" y="128" width="40" height="30" rx="3" fill="#bcd6ea" stroke="#0003"/>
+      <rect x="176" y="146" width="48" height="54" rx="4" fill="#4a5568"/><rect x="199" y="146" width="2" height="54" fill="#2d3748"/>
+      <circle cx="200" cy="86" r="15" fill="#fff" stroke="#222" stroke-width="3"/><path d="M185 86 A15 15 0 0 1 215 86Z" fill="${c}" stroke="#222" stroke-width="3"/>
+      <circle cx="200" cy="86" r="5" fill="#fff" stroke="#222" stroke-width="3"/>
+      <rect x="150" y="186" width="100" height="14" fill="#cfc8b8"/>
+      <rect x="318" y="150" width="6" height="50" fill="#555"/><rect x="304" y="132" width="34" height="22" rx="3" fill="#fff" stroke="#555" stroke-width="2"/>
+      <text x="321" y="147" text-anchor="middle" font-size="10" font-weight="700" fill="${c}">${g.num}</text>`}
+    <rect x="12" y="12" rx="10" width="${Math.min(376, Math.max(150, titulo.length * 9.2 + 24))}" height="30" fill="#000" opacity=".35"/>
+    <text x="24" y="33" font-size="16" font-weight="700" fill="#fff">${esc(titulo)}</text>
+    <rect x="12" y="48" rx="9" width="${tn.length * 8 + 34}" height="24" fill="${c}" stroke="#fff" stroke-width="2"/>
+    <text x="24" y="65" font-size="13" font-weight="700" fill="#fff">${esc(tn)}</text>
+  </svg>`;
+}
+
+// Fotos reales del gimnasio (WikiDex); si no hay, la ilustración
+function fotosGim(g, l, j) {
+  const f = ((window.GIM_FOTOS || {})[j.id] || {})[g.num] || {};
+  if (g.tipo !== 'gym' || (!f.ext && !f.int)) return ilustracionGim(g, l, j);
+  const titulo = `Gimnasio de ${g.lugar}`;
+  const foto = (src, pie) => `<figure class="foto-gim"><img src="${src}" alt="${esc(titulo + ' — ' + pie)}" referrerpolicy="no-referrer"
+      onload="if(this.naturalWidth<400)this.style.imageRendering='pixelated'" onerror="this.closest('figure').remove()"><figcaption>${esc(pie)}</figcaption></figure>`;
+  return `<div class="fotos-gim" style="--c:${COLOR[l.tipo]}">
+    <div class="tit-gim"><b>${esc(titulo)}</b> ${chip(l.tipo)}</div>
+    ${f.ext ? foto(f.ext, 'Exterior') : ''}${f.int ? foto(f.int, 'Interior') : ''}
+  </div>`;
+}
+
+function tiposMiembro(m, gen) {
+  const p = D.pokemon.find(x => x.id === m.pid);
+  const ts = m.t && m.t.length ? m.t : (p ? tiposEnGen(p, gen) : []);
+  return [...new Set(ts)];
+}
+function multiplicadores(ts, gen) {
+  const {tipos, t} = tablaGen(gen);
+  const mult = (a, d) => t[a] && t[a][d] !== undefined ? t[a][d] : 1;
+  const propios = ts.filter(x => tipos.includes(x));
+  return tipos.map(a => [a, propios.reduce((m, d) => m * mult(a, d), 1)]);
+}
+
+function mostrarListaGim() {
+  const jid = $('juegoGim').value, j = D.juegos.find(x => x.id === jid), gs = G[jid];
+  $('detalleGim').innerHTML = '';
+  if (!gs) {
+    $('listaGim').innerHTML = `<p class="vacio" style="grid-column:1/-1">${esc(j.nombre)} no tiene gimnasios${
+      jid === '24' ? ' (Leyendas Arceus tiene Nobles en lugar de gimnasios)' : jid === '30' ? ' (en Leyendas Z-A se sube de rango en el Torneo Z-A)' :
+      jid === '32' ? ' (es un juego solo de combates)' : ''}.</p>`;
+    return;
+  }
+  const tarjeta = (g, i) => {
+    const l = g.lideres[0];
+    const nombres = [...new Set(g.lideres.map(x => x.n))].join(' / ');
+    const sub = g.tipo === 'kahuna' ? `Gran Prueba ${g.num} · ${esc(g.lugar)}` : g.tipo === 'elite4' ? `Alto Mando ${g.num}`
+      : g.tipo === 'champion' ? 'Campeón' : `Gimnasio ${g.num} · ${esc(g.lugar)}`;
+    const tipo = g.tipo === 'champion' ? 'Varios' : (NOMBRE[l.tipo] || 'Varios');
+    return `<button class="gim-btn ${i === gimSel ? 'activa' : ''}" data-i="${i}" style="--c:${g.tipo === 'champion' ? '#c9a227' : COLOR[l.tipo]}">
+      <img src="${l.img}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${fotoShowdown(l)}'">
+      <span><small>${sub}</small><b>${esc(nombres)}</b>
+      <span class="tipo" style="background:${g.tipo === 'champion' ? '#c9a227' : COLOR[l.tipo]};font-size:.7rem;padding:1px 8px">${tipo}</span>
+      ${(() => { const r = obediencia(jid, g); return r && r.despues > r.antes ? `<span class="obed-mini" title="Nivel de obediencia tras ganar">✔ ${nivelTxt(r.despues)}</span>` : ''; })()}</span></button>`;
+  };
+  const ind = gs.map((g, i) => [g, i]);
+  const grupos = [
+    [gs.some(g => g.tipo === 'kahuna') ? 'Grandes Pruebas' : 'Gimnasios', ind.filter(([g]) => g.tipo === 'gym' || g.tipo === 'kahuna')],
+    ['Liga Pokémon: Alto Mando y Campeón', ind.filter(([g]) => g.tipo === 'elite4' || g.tipo === 'champion')]
+  ].filter(([, l]) => l.length);
+  $('listaGim').innerHTML = grupos.map(([t, l]) => `<h2 class="titulo-grupo">${t}</h2>${l.map(([g, i]) => tarjeta(g, i)).join('')}`).join('');
+  $('listaGim').querySelectorAll('.gim-btn').forEach(b => b.onclick = () => { gimSel = +b.dataset.i; liderSel = 0; mostrarListaGim(); mostrarGim(); });
+  if (gimSel >= gs.length) gimSel = 0;
+  mostrarGim();
+}
+
+function mostrarGim() {
+  const jid = $('juegoGim').value, j = D.juegos.find(x => x.id === jid), gs = G[jid];
+  if (!gs) return;
+  const g = gs[gimSel], l = g.lideres[Math.min(liderSel, g.lideres.length - 1)], gen = j.gen;
+  const alterna = g.lideres.length > 1 ? `<div class="alterna">${g.lideres.map((x, i) =>
+    `<button data-l="${i}" class="${x === l ? 'activa' : ''}">${esc(x.n)}${x.notas.length ? ' · ' + esc(NOTA_ES(x.notas[0])) : ''}</button>`).join('')}</div>` : '';
+
+  const miembros = l.equipo.map(m => {
+    const ts = tiposMiembro(m, gen), mu = multiplicadores(ts, gen);
+    const sp = D.especies[m.s], p = D.pokemon.find(x => x.id === m.pid);
+    const nombre = (sp ? sp.n : '?') + (p && !p.d && p.f ? ` (${p.f})` : (m.f && !p ? ` (${m.f})` : ''));
+    const debil = mu.filter(x => x[1] >= 2).sort((a, b) => b[1] - a[1]);
+    const fuerte = mu.filter(x => x[1] < 1).sort((a, b) => a[1] - b[1]);
+    return {m, ts, mu, html: `<div class="miembro" style="--c:${COLOR[ts[0]] || '#9fa19f'}">
+      <div class="top"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${m.pid}.png" alt="" loading="lazy">
+        <div><h4>${esc(nombre)}</h4><small class="vacio">${m.nv ? 'Nivel ' + m.nv : ''}</small>
+        <div class="chips" style="margin-top:4px">${ts.map(t => chip(t)).join('')}</div></div></div>
+      <div class="fila"><span class="e">Débil a</span>${debil.map(([t, x]) => chip(t, x)).join('') || '<span class="vacio">Nada</span>'}</div>
+      <div class="fila"><span class="e">Resiste / inmune</span>${fuerte.map(([t, x]) => chip(t, x)).join('') || '<span class="vacio">Nada</span>'}</div>
+    </div>`};
+  });
+
+  // Resumen del equipo: cuántos miembros son débiles o resistentes a cada tipo de ataque
+  const {tipos} = tablaGen(gen), n = miembros.length;
+  const cuenta = tipos.map(a => {
+    let deb = 0, res = 0;
+    for (const x of miembros) { const v = x.mu.find(y => y[0] === a)[1]; if (v >= 2) deb++; else if (v < 1) res++; }
+    return {a, deb, res, saldo: deb - res};
+  });
+  const mejores = cuenta.filter(c => c.deb > 0 && c.saldo > 0).sort((a, b) => b.saldo - a.saldo || b.deb - a.deb);
+  const evitar = cuenta.filter(c => c.res > 0 && c.saldo < 0).sort((a, b) => a.saldo - b.saldo);
+  const etq = (c, campo) => `<span class="tipo" style="background:${COLOR[c.a]}">${NOMBRE[c.a]}<b>${c[campo]}/${n}</b></span>`;
+
+  $('detalleGim').innerHTML = `<div class="gim-det" style="--c:${COLOR[l.tipo] || '#9fa19f'}">
+    ${alterna}
+    <div class="gim-cab">
+      <div class="ilus">${fotosGim(g, l, j)}</div>
+      <div class="lider">
+        <img src="${l.img}" alt="${esc(l.n)}" onerror="this.onerror=null;this.src='${fotoShowdown(l)}'">
+        <h2>${esc(l.n)}</h2>
+        <small>${({kahuna: 'Kahuna', elite4: 'Alto Mando', champion: 'Campeón de la Liga'})[g.tipo] || 'Líder de gimnasio'}${l.medalla ? ' · ' + esc(l.medalla) : ''}</small>
+        <div class="chips" style="justify-content:center;margin-top:6px">${g.tipo === 'champion' ? '' : chip(l.tipo)}</div>
+      </div>
+    </div>
+    ${obedienciaHTML(jid, g)}
+    <div class="resumen">
+      <h3>Contra este equipo</h3>
+      ${grupoLibre('Mejores tipos para atacar', '(miembros débiles a ese tipo)', mejores.slice(0, 8).map(c => etq(c, 'deb')))}
+      ${grupoLibre('Tipos que conviene evitar', '(miembros que los resisten)', evitar.slice(0, 8).map(c => etq(c, 'res')))}
+      <p class="nota">Tabla de tipos de la ${gen}.ª generación. Cuenta solo los tipos de cada Pokémon (no habilidades, objetos ni teratipos).</p>
+    </div>
+    <div id="vsEquipo" class="resumen"></div>
+    <div id="recoGim" class="resumen"><h3>Pokémon recomendados de este juego</h3><p class="vacio">Calculando…</p></div>
+    <h3 style="margin:16px 0 0">Equipo (${n} Pokémon)</h3>
+    <div class="equipo">${miembros.map(x => x.html).join('')}</div>
+  </div>`;
+  $('detalleGim').querySelectorAll('.alterna button').forEach(b => b.onclick = () => { liderSel = +b.dataset.l; mostrarGim(); });
+  recomendar(j, l, miembros.map(x => x.ts));
+  if (window.liderVsEquipo) liderVsEquipo(j, l);
+}
+// Recomendaciones: Pokémon salvajes del juego a un nivel parecido, puntuados por ataque y defensa contra el equipo
+async function recomendar(j, l, tiposEquipo) {
+  const caja = $('recoGim'), marca = j.id + '|' + l.n + '|' + l.equipo.length;
+  caja.dataset.m = marca;
+  const u = await cargarUbic(j.id);
+  if (caja.dataset.m !== marca) return;
+  if (!u) { caja.innerHTML = '<h3>Pokémon recomendados de este juego</h3><p class="vacio">No hay datos de Pokémon salvajes para este juego.</p>'; return; }
+  const {tipos, t} = tablaGen(j.gen);
+  const mult = (a, d) => t[a] && t[a][d] !== undefined ? t[a][d] : 1;
+  const contra = (atk, defs) => defs.reduce((m, d) => m * mult(atk, d), 1);
+  const nivelMax = Math.max(...l.equipo.map(m => m.nv || 0)) || 100;
+  const cand = [];
+  for (const [pid, encs] of Object.entries(u.p)) {
+    const p = D.pokemon.find(x => x.id === +pid);
+    if (!p || p.m) continue;
+    const nivel = Math.min(...encs.map(e => e[2] || 99));
+    if (nivel > nivelMax + 3) continue;            // demasiado tarde para este combate
+    const ts = tiposEnGen(p, j.gen).filter(x => tipos.includes(x));
+    let ataque = 0, defensa = 0, superef = 0;
+    for (const te of tiposEquipo) {
+      const mejor = Math.max(...ts.map(a => contra(a, te)));     // su mejor ataque de su tipo
+      const peor = Math.max(...te.map(a => contra(a, ts)));      // el peor ataque del rival contra él
+      ataque += Math.log2(mejor || .25); defensa += Math.log2(peor || .25);
+      if (mejor >= 2) superef++;
+    }
+    const st = statsEn(pid, j.gen);
+    const fuerza = st.length ? st.reduce((a, b) => a + b, 0) / 600 : .5;
+    cand.push({p, ts, nivel, punt: ataque * 1.2 - defensa + fuerza, superef, encs});
+  }
+  cand.sort((a, b) => b.punt - a.punt);
+  const vistos = new Set(), top = [];
+  for (const c of cand) { if (vistos.has(c.p.s)) continue; vistos.add(c.p.s); top.push(c); if (top.length >= 8) break; }
+  const n = tiposEquipo.length;
+  caja.innerHTML = `<h3>Pokémon recomendados de este juego <small class="vacio">(salvajes, hasta nivel ${nivelMax + 3})</small></h3>
+    <div class="reco">${top.map(c => {
+      const [lid, met, mn] = c.encs.slice().sort((a, b) => a[2] - b[2])[0];
+      return `<button class="reco-p" data-pid="${c.p.id}" style="--c:${COLOR[c.ts[0]]}">
+        <img src="${sprite(c.p.id)}" alt="" loading="lazy">
+        <b>${esc(nombrePoke(c.p))}</b><span class="chips">${c.ts.map(x => chip(x)).join('')}</span>
+        <small>Súper eficaz contra ${c.superef}/${n}</small><small>${esc(u.locs[lid][0])} · Nv. ${mn}</small></button>`; }).join('') || '<p class="vacio">Ninguno destacado.</p>'}</div>
+    <p class="nota">Se cuentan solo los tipos (no movimientos concretos ni habilidades) y el nivel al que aparecen; alguno puede necesitar
+      una caña, una MO o avanzar en la historia. Pulsa uno para ver su ficha.</p>`;
+  caja.querySelectorAll('.reco-p').forEach(b => b.onclick = () => irAPokemon(j.id, +b.dataset.pid));
+}
+function irAPokemon(jid, pid) {
+  document.querySelector('[data-vista=vistaTipos]').click();
+  const sel = $('juego');
+  if (sel.value !== jid) { sel.value = jid; $('buscar').value = ''; construirLista(); }
+  const ps = $('pokemon');
+  if (![...ps.options].some(o => +o.value === pid)) {
+    $('nacional').checked = true; construirLista();
+  }
+  if ([...ps.options].some(o => +o.value === pid)) { ps.value = pid; mostrar(); }
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// Obediencia: nivel hasta el que te obedecen los Pokémon antes y después de este gimnasio
+function obediencia(jid, g) {
+  const o = (window.OBEDIENCIA || {})[jid];
+  if (!o || !(g.tipo === 'gym' || g.tipo === 'kahuna')) return null;
+  const n = g.num;
+  const antes = n === 1 ? o.base : (o.caps[n - 2] ?? 100);
+  const despues = o.caps[n - 1] ?? 100;
+  return {antes, despues, o, n};
+}
+const nivelTxt = v => v >= 100 ? 'todos' : 'Nv. ' + v;
+function obedienciaHTML(jid, g) {
+  const r = obediencia(jid, g);
+  if (!r) return '';
+  const {antes, despues, o, n} = r;
+  const sube = despues > antes;
+  const titulo = sube ? (despues >= 100 ? 'Tras ganar, te obedecen todos los Pokémon' : `Tras ganar, te obedecen hasta el nivel ${despues}`)
+    : (despues >= 100 ? 'Ya te obedecen todos los Pokémon' : `Esta ${o.sellos ? 'prueba' : 'medalla'} no sube el límite (sigue en el nivel ${despues})`);
+  const extra = [
+    o.porNumero ? `Cuenta el número de medallas, no cuáles: con ${n} medalla${n > 1 ? 's' : ''}.` : '',
+    o.sellos ? 'En Alola el límite lo dan los sellos de las grandes pruebas.' : '',
+    n > 8 && o.nota ? o.nota : '',
+    o.final && n === o.caps.length ? o.final : ''
+  ].filter(Boolean).join(' ');
+  return `<div class="obed ${sube ? 'sube' : ''}">
+    <div class="obed-n"><small>Antes</small><b>${nivelTxt(antes)}</b></div>
+    <div class="obed-f">➜</div>
+    <div class="obed-n fin"><small>Después</small><b>${nivelTxt(despues)}</b></div>
+    <div class="obed-t"><b>${titulo}</b><small>Afecta a los Pokémon que no capturaste tú (intercambiados o de otro entrenador original).${extra ? ' ' + extra : ''}</small></div>
+  </div>`;
+}
+
+function grupoLibre(titulo, sub, items) {
+  return `<div class="bloque"><h3 style="font-size:.92rem">${titulo} <small class="vacio">${sub}</small></h3><div class="chips">${
+    items.length ? items.join('') : '<span class="vacio">Ninguno destacado</span>'}</div></div>`;
+}
+
+// ---------- Planificador de equipo ----------
+const CLAVE_EQ = 'pokeguia.equipo.';
+function leerEquipo(jid) { try { return JSON.parse(localStorage.getItem(CLAVE_EQ + jid) || '[]'); } catch { return []; } }
+function guardarEquipo(jid, l) { try { localStorage.setItem(CLAVE_EQ + jid, JSON.stringify(l)); } catch {} }
+function pokesDelJuego(j) {
+  const ent = j.nacional.length ? j.nacional : j.dex.map(x => x[0]);
+  const l = [];
+  for (const s of ent) for (const p of (POR_ESPECIE[s] || [])) if (formaDisponible(p, j)) l.push(p);
+  return l;
+}
+function mostrarEquipo() {
+  const j = D.juegos.find(x => x.id === $('juegoEq').value), gen = j.gen;
+  const pokes = pokesDelJuego(j), porNombre = new Map(pokes.map(p => [nombrePoke(p).toLowerCase(), p]));
+  $('listaEq').innerHTML = pokes.map(p => `<option value="${esc(nombrePoke(p))}">`).join('');
+  let eq = leerEquipo(j.id).filter(id => pokes.some(p => p.id === id)).slice(0, 6);
+  $('huecos').innerHTML = Array.from({length: 6}, (_, i) => {
+    const p = pokes.find(x => x.id === eq[i]);
+    const ts = p ? tiposEnGen(p, gen) : [];
+    return `<div class="hueco ${p ? 'lleno' : ''}" style="--c:${p ? COLOR[ts[0]] : 'var(--borde)'}">
+      ${p ? `<img src="${sprite(p.id)}" alt="" loading="lazy"><b>${esc(nombrePoke(p))}</b><div class="chips">${ts.map(t => chip(t)).join('')}</div>
+        <button type="button" class="quitar" data-i="${i}" aria-label="Quitar">✕</button>`
+        : `<div class="vacio-h">+</div><input list="listaEq" data-i="${i}" placeholder="Añadir Pokémon…" autocomplete="off">`}
+    </div>`;
+  }).join('');
+  $('huecos').querySelectorAll('input').forEach(inp => inp.addEventListener('change', () => {
+    const p = porNombre.get(inp.value.trim().toLowerCase());
+    if (!p) { inp.value = ''; inp.placeholder = 'No está en este juego'; return; }
+    eq = eq.filter(Boolean); eq.push(p.id); guardarEquipo(j.id, eq); mostrarEquipo();
+  }));
+  $('huecos').querySelectorAll('.quitar').forEach(b => b.onclick = () => { eq.splice(+b.dataset.i, 1); guardarEquipo(j.id, eq); mostrarEquipo(); });
+  analizarEquipo(j, eq.map(id => pokes.find(p => p.id === id)).filter(Boolean), pokes);
+}
+function analizarEquipo(j, eq, pokes) {
+  const caja = $('analisisEq');
+  if (!eq.length) { caja.innerHTML = '<div class="extra"><p class="vacio">Añade Pokémon a tu equipo para ver sus puntos débiles y su cobertura.</p></div>'; return; }
+  const {tipos, t} = tablaGen(j.gen);
+  const mult = (a, d) => t[a] && t[a][d] !== undefined ? t[a][d] : 1;
+  const tsDe = p => tiposEnGen(p, j.gen).filter(x => tipos.includes(x));
+  // Defensa: cada tipo de ataque contra cada miembro
+  const fmt = v => v === 0 ? '0' : v === .25 ? '¼' : v === .5 ? '½' : v;
+  const filas = tipos.map(a => {
+    const vs = eq.map(p => tsDe(p).reduce((m, d) => m * mult(a, d), 1));
+    const deb = vs.filter(v => v > 1).length, res = vs.filter(v => v < 1).length;
+    return {a, vs, deb, res};
+  });
+  const tabla = `<div class="tabla-mov tabla-eq"><table><thead><tr><th>Ataque</th>${eq.map(p => `<th title="${esc(nombrePoke(p))}"><img src="${sprite(p.id)}" alt="${esc(nombrePoke(p))}"></th>`).join('')}<th>Débiles</th><th>Resisten</th></tr></thead><tbody>${
+    filas.map(f => `<tr class="${f.deb >= 3 && f.deb > f.res ? 'malo' : ''}"><td>${chip(f.a)}</td>${f.vs.map(v => `<td class="m m${String(v).replace('.', '')}">${v === 1 ? '' : '×' + fmt(v)}</td>`).join('')}<td><b>${f.deb || ''}</b></td><td>${f.res || ''}</td></tr>`).join('')}</tbody></table></div>`;
+  const problemas = filas.filter(f => f.deb > f.res && f.deb >= 2).sort((a, b) => (b.deb - b.res) - (a.deb - a.res));
+  // Ataque: qué tipos golpea súper eficazmente con sus propios tipos
+  const cubiertos = tipos.filter(d => eq.some(p => tsDe(p).some(a => mult(a, d) >= 2)));
+  const sinCubrir = tipos.filter(d => !cubiertos.includes(d));
+  // Sugerencias: tipos que resisten los problemas y cubren lo que falta
+  const sug = tipos.map(x => {
+    let s = 0;
+    for (const f of problemas) { const v = mult(f.a, x); if (v < 1) s += 2; else if (v > 1) s -= 2; }
+    for (const d of sinCubrir) if (mult(x, d) >= 2) s += 1.5;
+    return [x, s];
+  }).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  const leg = new Set(X.leg || []);
+  const ejemplos = x => pokes.filter(p => tsDe(p).includes(x) && !eq.includes(p))
+    .sort((a, b) => (leg.has(a.s) - leg.has(b.s)) || ((X.stats[b.id] || []).reduce((s, v) => s + v, 0)) - ((X.stats[a.id] || []).reduce((s, v) => s + v, 0))).slice(0, 4);
+  caja.innerHTML = `<div class="extra">
+    <div class="extra-grid">
+      <div class="bloque"><h3>Puntos débiles del equipo</h3><div class="chips">${problemas.length ? problemas.map(f => `<span class="tipo" style="background:${COLOR[f.a]}">${NOMBRE[f.a]}<b>${f.deb} débiles</b></span>`).join('') : '<span class="vacio">Ninguno grave. ¡Buen equilibrio!</span>'}</div></div>
+      <div class="bloque"><h3>Tipos que no puedes golpear súper eficazmente</h3><div class="chips">${sinCubrir.length ? sinCubrir.map(x => chip(x)).join('') : '<span class="vacio">Cubres todos los tipos.</span>'}</div>
+        <p class="nota">Solo con ataques de su propio tipo.</p></div>
+    </div>
+    ${sug.length && eq.length < 6 ? `<div class="bloque"><h3>Te convendría añadir…</h3>${sug.map(([x]) => `<div class="sug">${chip(x)}<span class="sug-l">${ejemplos(x).map(p =>
+      `<button class="sug-p" data-pid="${p.id}"><img src="${sprite(p.id)}" alt="" loading="lazy">${esc(nombrePoke(p))}</button>`).join('')}</span></div>`).join('')}</div>` : ''}
+    <div class="bloque"><h3>Tabla de debilidades</h3>${tabla}</div>
+  </div>`;
+  caja.querySelectorAll('.sug-p').forEach(b => b.onclick = () => {
+    const l = leerEquipo(j.id); if (l.length >= 6) return;
+    l.push(+b.dataset.pid); guardarEquipo(j.id, l); mostrarEquipo();
+  });
+}
+(function () {
+  const sel = $('juegoEq');
+  [...D.juegos].sort((a, b) => b.orden - a.orden).forEach(j => { const o = document.createElement('option'); o.value = j.id; o.textContent = `${j.nombre} — Gen ${j.gen}`; sel.appendChild(o); });
+  sel.addEventListener('change', mostrarEquipo);
+})();
+
+// ---------- Tabla de tipos interactiva ----------
+const ABREV = {normal:'NOR',fighting:'LUC',flying:'VOL',poison:'VEN',ground:'TIE',rock:'ROC',bug:'BIC',ghost:'FAN',steel:'ACE',
+  fire:'FUE',water:'AGU',grass:'PLA',electric:'ELÉ',psychic:'PSÍ',ice:'HIE',dragon:'DRA',dark:'SIN',fairy:'HAD'};
+const estTab = {modo: 'def', sel: []};
+const multTxt = m => m === .25 ? '¼' : m === .5 ? '½' : String(m);
+const clsMult = m => 'c' + String(m).replace('.', '');
+function juegoTab() { return D.juegos.find(x => x.id === $('juegoTab').value); }
+
+function pintarTab() {
+  const j = juegoTab(), {tipos, t} = tablaGen(j.gen);
+  const actual = tablaGen(99).t;
+  estTab.sel = estTab.sel.filter(x => tipos.includes(x));
+  const etapa = j.gen === 1 ? 'tabla de la 1.ª generación' : j.gen <= 5 ? 'tabla de las generaciones 2 a 5' : 'tabla actual (generación 6 en adelante)';
+  $('genTab').textContent = '— ' + etapa;
+  // Selector de tipos
+  $('tiposTab').innerHTML = tipos.map(x => `<button type="button" data-t="${x}" class="${estTab.sel.includes(x) ? 'on' : ''}" style="background:${COLOR[x]}">${NOMBRE[x]}</button>`).join('');
+  $('tiposTab').querySelectorAll('button').forEach(b => b.onclick = () => {
+    const x = b.dataset.t, s = estTab.sel;
+    if (estTab.modo === 'atk') estTab.sel = s[0] === x ? [] : [x];
+    else if (s.includes(x)) estTab.sel = s.filter(y => y !== x);
+    else estTab.sel = s.length >= 2 ? [s[1], x] : [...s, x];
+    pintarTab();
+  });
+  document.querySelectorAll('#modoTab button').forEach(b => b.classList.toggle('on', b.dataset.m === estTab.modo));
+  $('ayudaTab').textContent = estTab.modo === 'def' ? 'Elige uno o dos tipos del Pokémon que recibe el ataque' : 'Elige el tipo del movimiento con el que atacas';
+  const m = (a, d) => (t[a] && t[a][d] !== undefined) ? t[a][d] : 1;
+
+  // Calculadora
+  const caja = $('calcTab');
+  if (!estTab.sel.length) {
+    caja.innerHTML = `<h2 class="titulo-grupo" style="margin-top:0">Calculadora</h2><p class="vacio">Pulsa un tipo de arriba (o una fila o columna de la tabla) para ver qué le afecta.</p>`;
+  } else {
+    const grupos = new Map();
+    for (const x of tipos) {
+      const v = estTab.modo === 'def' ? estTab.sel.reduce((p, d) => p * m(x, d), 1) : m(estTab.sel[0], x);
+      if (!grupos.has(v)) grupos.set(v, []);
+      grupos.get(v).push(x);
+    }
+    const textos = estTab.modo === 'def'
+      ? {4: 'Muy débil', 2: 'Débil', 1: 'Normal', .5: 'Resiste', .25: 'Resiste mucho', 0: 'Inmune'}
+      : {2: 'Muy eficaz', 1: 'Normal', .5: 'Poco eficaz', 0: 'No afecta'};
+    const filas = [4, 2, 1, .5, .25, 0].filter(v => grupos.has(v)).map(v =>
+      `<div class="calc-fila"><b class="m${String(v).replace('.', '')}" title="${textos[v]}">×${multTxt(v)}</b><div class="chips"><span class="vacio" style="min-width:96px">${textos[v]}</span>${grupos.get(v).map(x => chip(x)).join('')}</div></div>`).join('');
+    const titulo = estTab.modo === 'def'
+      ? `Ataques contra ${estTab.sel.map(x => chip(x)).join(' ')}`
+      : `Atacando con ${chip(estTab.sel[0])}`;
+    let pokes = '';
+    if (estTab.modo === 'def') {
+      const clave = [...estTab.sel].sort().join('+');
+      const lista = pokesDelJuego(j).filter(p => [...tiposEnGen(p, j.gen)].sort().join('+') === clave);
+      const vistos = new Set(), unicos = lista.filter(p => !vistos.has(p.id) && vistos.add(p.id));
+      pokes = `<div class="seccion" style="margin-top:14px">Pokémon de ${esc(j.nombre)} con ${estTab.sel.length === 2 ? 'esos dos tipos' : 'solo ese tipo'} (${unicos.length})</div>` +
+        (unicos.length ? `<div class="calc-poke">${unicos.slice(0, 60).map(p => `<button type="button" data-pid="${p.id}"><img src="${sprite(p.id)}" alt="" loading="lazy">${esc(nombrePoke(p))}</button>`).join('')}${unicos.length > 60 ? `<span class="vacio">y ${unicos.length - 60} más</span>` : ''}</div>`
+          : `<p class="vacio">Ningún Pokémon de este juego tiene esa combinación.</p>`);
+    }
+    caja.innerHTML = `<h2 class="titulo-grupo" style="margin-top:0;flex-wrap:wrap">${titulo}</h2><div class="calc-filas">${filas}</div>${pokes}`;
+    caja.querySelectorAll('.calc-poke button').forEach(b => b.onclick = () => irAPokemon(j.id, +b.dataset.pid));
+  }
+
+  // Tabla completa
+  const marcar = $('cambiosTab').checked;
+  const cambios = [];
+  let h = `<thead><tr><th class="esq">ATACA ↓<br>RECIBE →</th>${tipos.map(d => `<th data-d="${d}" style="background:${COLOR[d]}" title="${NOMBRE[d]}">${ABREV[d]}</th>`).join('')}</tr></thead><tbody>`;
+  for (const a of tipos) {
+    h += `<tr><th data-a="${a}" style="background:${COLOR[a]}">${NOMBRE[a]}</th>`;
+    for (const d of tipos) {
+      const v = m(a, d), va = (actual[a] && actual[a][d] !== undefined) ? actual[a][d] : 1;
+      const dif = v !== va;
+      if (dif) cambios.push(`${NOMBRE[a]} contra ${NOMBRE[d]}: ×${multTxt(v)} aquí, ×${multTxt(va)} ahora`);
+      const cls = [clsMult(v)];
+      if (marcar && dif) cls.push('cambio');
+      if ((estTab.modo === 'atk' && estTab.sel[0] === a) || (estTab.modo === 'def' && estTab.sel.includes(d))) cls.push('cruz');
+      h += `<td class="${cls.join(' ')}" data-a="${a}" data-d="${d}" title="${NOMBRE[a]} → ${NOMBRE[d]}: ×${multTxt(v)}${dif ? ' (ahora ×' + multTxt(va) + ')' : ''}">${v === 1 ? '·' : multTxt(v)}</td>`;
+    }
+    h += '</tr>';
+  }
+  $('tablaTab').innerHTML = h + '</tbody>';
+  const faltan = TIPOS.filter(x => !tipos.includes(x)).map(x => NOMBRE[x]);
+  let nota = $('notaCambiosTab');
+  if (!nota) { nota = document.createElement('div'); nota.id = 'notaCambiosTab'; $('tablaTab').parentNode.after(nota); }
+  nota.innerHTML = marcar
+    ? (cambios.length || faltan.length
+        ? `<ul class="cambios-lista">${faltan.length ? `<li>No existen los tipos ${faltan.join(', ')}.</li>` : ''}${cambios.map(c => `<li>${c}</li>`).join('')}</ul>`
+        : '<p class="vacio" style="margin-top:8px">Este juego usa la tabla actual: no hay cambios.</p>')
+    : '';
+}
+(function () {
+  const sel = $('juegoTab');
+  [...D.juegos].sort((a, b) => b.orden - a.orden).forEach(j => { const o = document.createElement('option'); o.value = j.id; o.textContent = `${j.nombre} — Gen ${j.gen}`; sel.appendChild(o); });
+  sel.addEventListener('change', pintarTab);
+  $('cambiosTab').addEventListener('change', pintarTab);
+  document.querySelectorAll('#modoTab button').forEach(b => b.onclick = () => {
+    if (estTab.modo === b.dataset.m) return;
+    estTab.modo = b.dataset.m; estTab.sel = estTab.sel.slice(0, b.dataset.m === 'atk' ? 1 : 2); pintarTab();
+  });
+  const tabla = $('tablaTab');
+  const limpiar = () => tabla.querySelectorAll('.hl').forEach(x => x.classList.remove('hl'));
+  tabla.addEventListener('mouseover', e => {
+    const c = e.target.closest('td, th'); limpiar(); if (!c) return;
+    const a = c.dataset.a, d = c.dataset.d;
+    tabla.querySelectorAll(`[data-a="${a}"]:not([data-d]), [data-d="${d}"]:not([data-a])`).forEach(x => x.classList.add('hl'));
+    if (a) tabla.querySelectorAll(`td[data-a="${a}"]`).forEach(x => x.classList.add('hl'));
+    if (d) tabla.querySelectorAll(`td[data-d="${d}"]`).forEach(x => x.classList.add('hl'));
+  });
+  tabla.addEventListener('mouseleave', limpiar);
+  tabla.addEventListener('click', e => {
+    const c = e.target.closest('th'); if (!c || c.classList.contains('esq')) return;
+    if (c.dataset.a) { estTab.modo = 'atk'; estTab.sel = [c.dataset.a]; }
+    else if (c.dataset.d) { estTab.modo = 'def'; estTab.sel = [c.dataset.d]; }
+    pintarTab();
+    $('calcTab').scrollIntoView({behavior: 'smooth', block: 'start'});
+  });
+})();
+
+rellenarJuegosGim();
+$('juegoGim').addEventListener('change', () => { gimSel = 0; liderSel = 0; mostrarListaGim(); });
+document.querySelectorAll('.vistas button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.vistas button').forEach(x => x.classList.toggle('activa', x === b));
+  document.querySelectorAll('main > section').forEach(s => s.hidden = s.id !== b.dataset.vista);
+  document.dispatchEvent(new CustomEvent('vista', {detail: b.dataset.vista}));
+  if (b.dataset.vista === 'vistaTab') {
+    if (!$('juegoTab').dataset.listo) { $('juegoTab').value = $('juego').value; $('juegoTab').dataset.listo = 1; }
+    pintarTab();
+  }
+  if (b.dataset.vista === 'vistaEq') {
+    if (!$('juegoEq').dataset.listo) { $('juegoEq').value = $('juego').value; $('juegoEq').dataset.listo = 1; }
+    mostrarEquipo();
+  }
+  if (b.dataset.vista === 'vistaGim') {
+    if (!$('juegoGim').dataset.listo) { $('juegoGim').value = $('juego').value; $('juegoGim').dataset.listo = 1; }
+    mostrarListaGim();
+  }
+});
+</script>
+<script src="rivales.js"></script>
+<script src="objetos.js"></script>
+<script src="objetos_lugares.js"></script>
+<script src="funciones.js"></script>
+<script src="funciones2.js"></script>
+</body>
+</html>

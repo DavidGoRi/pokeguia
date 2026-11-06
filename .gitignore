@@ -1,0 +1,6 @@
+# Copia local de imágenes para usar la app sin conexión (unos 760 MB): no se sube.
+# En la web publicada las imágenes se cargan de internet.
+imagenes/
+c/
+__pycache__/
+*.pyc
