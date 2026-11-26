@@ -14,7 +14,9 @@ https://davidgori.github.io/pokeguia/
 <!-- author-section -->
 Hecho por **David Gómez Rivas**, técnico de soporte IT y sistemas. **Disponible para trabajar** en soporte IT o administración de sistemas (presencial o remoto).
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-David_G%C3%B3mez_Rivas-0A66C2?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/david-gomez-rivas-6026501b7/) [![Email](https://img.shields.io/badge/Email-david.gm.ri%40gmail.com-EA4335?logo=gmail&logoColor=white)](mailto:david.gm.ri@gmail.com)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-David_G%C3%B3mez_Rivas-0A66C2?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/david-gomez-rivas-6026501b7/) [![Email](https://img.shields.io/badge/Email-david.gm.ri%40gmail.com-EA4335?logo=gmail&logoColor=white)](mailto:david.gm.ri@gmail.com) [![Ko-fi](https://img.shields.io/badge/Ko--fi-Ap%C3%B3yame-FF5E5B?logo=kofi&logoColor=white)](https://ko-fi.com/davidgmri)
+
+Si te resulta útil, puedes [invitarme a un café en Ko-fi](https://ko-fi.com/davidgmri). Es totalmente opcional: la web seguirá siendo gratis.
 
 Más proyectos en [github.com/DavidGoRi](https://github.com/DavidGoRi).
 
